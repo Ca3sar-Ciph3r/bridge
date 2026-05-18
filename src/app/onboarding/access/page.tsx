@@ -18,6 +18,7 @@ type Platform = {
   id: string;
   name: string;
   icon: string;
+  url: string;
   steps: string[];
 };
 
@@ -26,9 +27,9 @@ const PLATFORMS: Platform[] = [
     id: "google_business",
     name: "Google Business Profile",
     icon: "globe",
+    url: "https://business.google.com",
     steps: [
-      "Go to business.google.com and sign in",
-      "Click Users in the left menu",
+      "Sign in and click Users in the left menu",
       "Click Add users and enter access@digitalnative.co.za",
       "Select Manager as the role",
       "Click Invite — we will receive it instantly",
@@ -38,24 +39,20 @@ const PLATFORMS: Platform[] = [
     id: "meta_business",
     name: "Meta Business Manager",
     icon: "layers",
+    url: "https://business.facebook.com/settings/partners",
     steps: [
-      "Go to business.facebook.com and sign in",
-      "Click Business Settings in the top navigation",
-      "Select Users then Partners",
-      "Click Add then Give a partner access to your assets",
+      "Click Business Settings → Users → Partners",
+      "Click Add → Give a partner access to your assets",
       "Enter Digital Native's Business ID (we will confirm this with you)",
-      "Select your Ad Account and Page to share",
-      "Click Next and confirm",
+      "Select your Ad Account and Page to share, then confirm",
     ],
   },
   {
     id: "google_ads",
     name: "Google Ads",
     icon: "megaphone",
+    url: "https://ads.google.com/aw/accountaccess/users",
     steps: [
-      "Sign in to ads.google.com",
-      "Click the tools icon in the top right corner",
-      "Go to Access and Security under Setup",
       "Click the + button to add a user",
       "Enter access@digitalnative.co.za",
       "Select Manager as the access level",
@@ -66,24 +63,22 @@ const PLATFORMS: Platform[] = [
     id: "google_analytics",
     name: "Google Analytics 4",
     icon: "target",
+    url: "https://analytics.google.com",
     steps: [
-      "Sign in to analytics.google.com",
       "Click Admin (gear icon) in the bottom left",
       "Under Account or Property, click Access Management",
-      "Click + then Add users",
-      "Enter access@digitalnative.co.za",
-      "Select Editor role as a minimum",
-      "Click Add to confirm",
+      "Click + → Add users and enter access@digitalnative.co.za",
+      "Select Editor role as a minimum and click Add",
     ],
   },
   {
     id: "instagram",
     name: "Instagram",
     icon: "star",
+    url: "https://business.facebook.com/settings/instagram-accounts",
     steps: [
       "Instagram is managed through Meta Business Manager",
-      "Complete the Meta Business Manager steps above",
-      "Ensure your Instagram account is connected to your Meta Business Manager",
+      "Complete the Meta Business Manager steps above first",
       "When sharing assets, include your Instagram account in the selection",
     ],
   },
@@ -91,27 +86,24 @@ const PLATFORMS: Platform[] = [
     id: "linkedin",
     name: "LinkedIn",
     icon: "users",
+    url: "https://www.linkedin.com/company/admin/manage-admins/",
     steps: [
-      "Go to your LinkedIn Company Page",
-      "Click Admin tools in the top right",
-      "Select Manage admins",
-      "Click Add admin",
+      "Go to your LinkedIn Company Page and click Admin tools",
+      "Select Manage admins → Add admin",
       "Search for Digital Native or enter the page name",
-      "Choose Super admin for full access",
-      "Click Save changes",
+      "Choose Super admin for full access and save",
     ],
   },
   {
     id: "tiktok",
     name: "TikTok Business",
     icon: "bolt",
+    url: "https://business.tiktok.com",
     steps: [
-      "Log in to TikTok Business Center at business.tiktok.com",
-      "Click Assets in the left menu then Ad Accounts",
+      "Click Assets → Ad Accounts in the left menu",
       "Click Assign on your ad account",
       "Enter Digital Native's Business Center ID (we will provide this)",
-      "Select Admin as the access level",
-      "Click Confirm to grant access",
+      "Select Admin access level and confirm",
     ],
   },
 ];
@@ -223,14 +215,27 @@ export default function AccessPage() {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 14, fontWeight: 600, letterSpacing: "-0.005em" }}>{platform.name}</div>
                         <div style={{ fontSize: 12, color: "var(--ink-4)", marginTop: 2 }}>
-                          {status === "not_started"
-                            ? "Click steps to expand, then mark when done"
+                          {status === "connected"
+                            ? "Access confirmed"
                             : status === "steps_sent"
-                            ? "Following the steps — update when access is granted"
-                            : "Access confirmed"}
+                            ? "In progress — mark as connected once done"
+                            : "Open the platform, follow the steps, then mark as done"}
                         </div>
                       </div>
-                      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <a
+                          href={platform.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            padding: "5px 12px", borderRadius: 20, cursor: "pointer", fontFamily: "var(--font-sans)",
+                            fontSize: 12, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 5,
+                            background: "var(--accent-soft)", color: "var(--accent)",
+                            border: "1px solid var(--accent-soft-2)", textDecoration: "none",
+                          }}
+                        >
+                          Open →
+                        </a>
                         <button type="button" onClick={() => cycleStatus(platform.id)} style={{
                           padding: "5px 12px", borderRadius: 20, cursor: "pointer", fontFamily: "var(--font-sans)",
                           fontSize: 12, fontWeight: 500, display: "flex", alignItems: "center", gap: 6,
@@ -239,7 +244,7 @@ export default function AccessPage() {
                           border: `1px solid ${status === "connected" ? "#bbf7d0" : status === "steps_sent" ? "#fde68a" : "var(--line)"}`,
                         }}>
                           {cfg.icon && <Icon name={cfg.icon} size={11} />}
-                          {cfg.label}
+                          {status === "not_started" ? "Mark sent" : status === "steps_sent" ? "Mark connected" : "Reset"}
                         </button>
                         <button type="button" onClick={() => setExpanded(isExpanded ? null : platform.id)} style={{
                           width: 28, height: 28, borderRadius: 7, display: "grid", placeItems: "center",
@@ -252,7 +257,7 @@ export default function AccessPage() {
 
                     {isExpanded && (
                       <div style={{ padding: "16px 20px 18px", background: "var(--bg)" }}>
-                        <div className="br-eyebrow" style={{ marginBottom: 12 }}>Step-by-step</div>
+                        <div className="br-eyebrow" style={{ marginBottom: 12 }}>Steps</div>
                         <ol style={{ margin: 0, paddingLeft: 20, display: "flex", flexDirection: "column", gap: 8 }}>
                           {platform.steps.map((step, i) => (
                             <li key={i} style={{ fontSize: 13.5, color: "var(--ink-2)", lineHeight: 1.55, paddingLeft: 4 }}>
@@ -260,15 +265,30 @@ export default function AccessPage() {
                             </li>
                           ))}
                         </ol>
-                        <div style={{ marginTop: 16, display: "flex", gap: 10 }}>
-                          <button type="button" onClick={() => { cycleStatus(platform.id); setExpanded(null); }} style={{
-                            padding: "8px 16px", borderRadius: 8, background: "var(--ink)", color: "#fff",
-                            border: "none", cursor: "pointer", fontSize: 13, fontWeight: 500,
-                            fontFamily: "var(--font-sans)", display: "inline-flex", alignItems: "center", gap: 7,
-                          }}>
-                            <Icon name="check" size={13} />
-                            {status === "not_started" ? "I've sent the invite" : status === "steps_sent" ? "Access is granted" : "Mark as not started"}
-                          </button>
+                        <div style={{ marginTop: 16, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                          <a
+                            href={platform.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              padding: "8px 16px", borderRadius: 8, background: "var(--accent)", color: "#fff",
+                              border: "none", cursor: "pointer", fontSize: 13, fontWeight: 500,
+                              fontFamily: "var(--font-sans)", display: "inline-flex", alignItems: "center", gap: 7,
+                              textDecoration: "none",
+                            }}
+                          >
+                            Open {platform.name} →
+                          </a>
+                          {status !== "connected" && (
+                            <button type="button" onClick={() => { cycleStatus(platform.id); }} style={{
+                              padding: "8px 16px", borderRadius: 8, background: "var(--ok-soft)", color: "var(--ok)",
+                              border: "1px solid #a7f3d0", cursor: "pointer", fontSize: 13, fontWeight: 500,
+                              fontFamily: "var(--font-sans)", display: "inline-flex", alignItems: "center", gap: 7,
+                            }}>
+                              <Icon name="check" size={13} />
+                              {status === "not_started" ? "I've sent the invite" : "Access is granted"}
+                            </button>
+                          )}
                           <button type="button" onClick={() => setExpanded(null)} style={{
                             padding: "8px 14px", borderRadius: 8, background: "var(--surface-2)", color: "var(--ink-3)",
                             border: "1px solid var(--line)", cursor: "pointer", fontSize: 13,

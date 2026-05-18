@@ -213,8 +213,8 @@ export default function GoalsPage() {
                       <Slider
                         value={annualRevenue}
                         min={0.5}
-                        max={500}
-                        step={0.5}
+                        max={10}
+                        step={0.1}
                         format={v => v >= 1 ? `R${v.toFixed(1)}M` : `R${(v * 1000).toFixed(0)}K`}
                         onChange={v => { setAnnualRevenue(v); autosave({ annual_revenue_usd: Math.round(v * 1_000_000) }); }}
                       />

@@ -332,33 +332,19 @@ export default function ReviewPage() {
 
                 <Card padding={20}>
                   <div className="br-eyebrow" style={{ marginBottom: 10 }}>What happens when you submit</div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                    {[
-                      ["Dock",    "Client record created"],
-                      ["Compass", "Proposal drafted in ~4 min"],
-                      ["Deck",    "Client portal provisioned"],
-                      ["Radar",   "Baseline analytics imported"],
-                      ["Beacon",  "Recall & intake workflows queued"],
-                    ].map(([app, action], i, arr) => (
-                      <div key={app} style={{ display: "flex", gap: 12, position: "relative" }}>
-                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 4 }}>
-                          <div style={{ width: 10, height: 10, borderRadius: 999, background: "var(--surface)", border: "1.5px solid var(--line-strong)" }} />
-                          {i < arr.length - 1 && <div style={{ flex: 1, width: 1.5, background: "var(--line-strong)", minHeight: 18 }} />}
-                        </div>
-                        <div style={{ flex: 1, paddingBottom: i < arr.length - 1 ? 12 : 0 }}>
-                          <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: "-0.005em" }}>{app}</div>
-                          <div style={{ fontSize: 12, color: "var(--ink-4)" }}>{action}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <p style={{ margin: 0, fontSize: 14, lineHeight: 1.65, color: "var(--ink-2)" }}>
+                    Once you submit, your business information will be handed directly to{" "}
+                    <strong>Luke Gunn</strong>, who'll be managing your account. Luke will review everything
+                    you've shared, put together a tailored strategy, and reach out to you with next steps.
+                    It's that personal — no bots, no hand-off queue.
+                  </p>
                 </Card>
 
                 <Button variant="accent" size="lg" full iconRight="arrow_right" onClick={handleSubmit} loading={submitting}>
-                  Submit &amp; generate proposal
+                  Submit
                 </Button>
                 <div style={{ fontSize: 11.5, color: "var(--ink-5)", textAlign: "center" }}>
-                  We'll email you when the proposal is ready (~4 min).
+                  Luke will be in touch shortly after you submit.
                 </div>
               </div>
             </div>

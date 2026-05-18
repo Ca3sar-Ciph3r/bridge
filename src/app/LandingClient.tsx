@@ -149,12 +149,7 @@ export function LandingClient() {
         <div style={{ display: "flex", gap: 18 }}>
           <span>Privacy</span><span>Terms</span><span>Support</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span>One link feeds:</span>
-          {["Dock", "Compass", "Deck", "Radar", "Beacon"].map((app, i) => (
-            <span key={app} style={{ color: "var(--ink-3)" }}>{i > 0 && "·"} {app}</span>
-          ))}
-        </div>
+        <span>© Digital Native</span>
       </div>
     </div>
   );

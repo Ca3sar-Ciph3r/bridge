@@ -59,22 +59,17 @@ function ColourPickerModal({ initial, onSave, onClose }: {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {COLOUR_LABELS.map((label, i) => (
             <div key={label} style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <div style={{
+              <label style={{
                 width: 44, height: 44, borderRadius: 10, border: "2px solid var(--line-strong)",
-                background: colours[i], flexShrink: 0, overflow: "hidden", cursor: "pointer",
-                boxShadow: "var(--shadow-1)",
+                background: colours[i], flexShrink: 0, cursor: "pointer",
+                boxShadow: "var(--shadow-1)", display: "block", position: "relative", overflow: "hidden",
               }}>
                 <input type="color" value={colours[i]} onChange={e => {
                   const next = [...colours];
                   next[i] = e.target.value;
                   setColours(next);
-                }} style={{ width: "200%", height: "200%", cursor: "pointer", opacity: 0, position: "absolute" }} />
-                <input type="color" value={colours[i]} onChange={e => {
-                  const next = [...colours];
-                  next[i] = e.target.value;
-                  setColours(next);
-                }} style={{ width: "100%", height: "100%", cursor: "pointer", border: "none", padding: 0, background: "none" }} />
-              </div>
+                }} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer", border: "none", padding: 0 }} />
+              </label>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>{label}</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
