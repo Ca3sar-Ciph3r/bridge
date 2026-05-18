@@ -5,7 +5,7 @@ import { ProgressRail } from "@/components/layout/ProgressRail";
 import { ClientBar } from "@/components/layout/ClientBar";
 import { StepFooter } from "@/components/layout/StepFooter";
 import { AICallout } from "@/components/layout/AICallout";
-import { Field, Textarea, Input } from "@/components/ui/Field";
+import { Field, Textarea } from "@/components/ui/Field";
 import { Pill } from "@/components/ui/Chip";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
@@ -13,79 +13,130 @@ import { MobileNav } from "@/components/layout/MobileNav";
 import { getOrCreateSession, getStrategy, saveStrategy, updateSessionSection } from "@/lib/actions/session";
 import type { OnboardingSession, Competitor } from "@/lib/types";
 
-const CONSTRAINTS = [
-  "High customer acquisition cost",
-  "Low brand awareness",
-  "No CRM or tracking in place",
-  "Poor online reviews",
-  "Manual or slow sales process",
-  "Underperforming website",
-  "No content or SEO strategy",
-  "Inconsistent messaging",
+const CONSTRAINTS: { label: string; desc: string }[] = [
+  { label: "Getting new customers costs too much",   desc: "You're spending a lot on ads or referrals but not seeing enough new clients in return." },
+  { label: "Not enough people know about us",        desc: "Most people in your area haven't heard of your business — you need more visibility." },
+  { label: "No system to track leads or follow-ups", desc: "Enquiries slip through the cracks because there's no software tracking who's interested and what happens next." },
+  { label: "Low or too few online reviews",          desc: "Your Google or Facebook rating is low, or you simply don't have many reviews yet — which puts off new customers." },
+  { label: "Bookings and quotes take too long",      desc: "Getting a quote out or booking a client still involves phone calls, WhatsApp, and manual back-and-forth." },
+  { label: "Our website isn't bringing in business", desc: "People visit the site but don't call, book, or enquire — something in the experience is losing them." },
+  { label: "We don't show up on Google",             desc: "When someone searches for your type of service in your area, your business doesn't appear in the results." },
+  { label: "Our brand looks inconsistent",           desc: "Your logo, colours, or tone of voice changes across your website, social media, and print — it doesn't feel like one brand." },
 ];
 
-const ICP_EXAMPLES: Record<string, string> = {
-  Demographics: "e.g. Young professionals 25–35, Families with children",
-  Geography: "e.g. Cape Town Northern Suburbs, Within 20km of CBD",
-  Mindset: "e.g. Values quality over price, Health-conscious",
-  "Trigger events": "e.g. New home purchase, Business expansion",
-};
+type IcpField = "icp_demographics" | "icp_geography" | "icp_mindset" | "icp_triggers";
 
-function ICPRow({ label, pills, onAdd, onRemove }: {
+const ICP_SECTIONS: {
+  heading: string;
+  fields: { key: IcpField; label: string; hint?: string; options: string[] }[];
+}[] = [
+  {
+    heading: "Demographics",
+    fields: [
+      {
+        key: "icp_demographics",
+        label: "Age range",
+        hint: "Select all that apply",
+        options: ["Under 18", "18–24", "25–34", "35–44", "45–54", "55+"],
+      },
+      {
+        key: "icp_demographics",
+        label: "Gender",
+        options: ["All genders", "Male", "Female", "Non-binary"],
+      },
+      {
+        key: "icp_demographics",
+        label: "Monthly household income",
+        hint: "ZAR",
+        options: ["Under R10K", "R10K–R25K", "R25K–R50K", "R50K–R100K", "R100K+"],
+      },
+      {
+        key: "icp_demographics",
+        label: "Education level",
+        options: ["High school", "Diploma / Certificate", "Bachelor's degree", "Postgraduate"],
+      },
+      {
+        key: "icp_demographics",
+        label: "Employment status",
+        options: ["Student", "Employed", "Self-employed", "Business owner", "Retired"],
+      },
+    ],
+  },
+  {
+    heading: "Location",
+    fields: [
+      {
+        key: "icp_geography",
+        label: "Location type",
+        options: ["Urban / CBD", "Suburban", "Peri-urban", "Rural", "Online — nationwide"],
+      },
+      {
+        key: "icp_geography",
+        label: "Primary region",
+        hint: "SA province",
+        options: ["Gauteng", "Western Cape", "KwaZulu-Natal", "Eastern Cape", "Limpopo", "Mpumalanga", "North West", "Free State", "Northern Cape", "Nationwide"],
+      },
+    ],
+  },
+  {
+    heading: "Psychographics",
+    fields: [
+      {
+        key: "icp_mindset",
+        label: "Lifestyle",
+        hint: "Who they are day-to-day",
+        options: ["Urban professional", "Family-focused", "Health & fitness", "Entrepreneur", "Social trendsetter", "Budget-conscious", "Eco-conscious"],
+      },
+      {
+        key: "icp_mindset",
+        label: "Core values",
+        hint: "What they care about most",
+        options: ["Quality over price", "Convenience", "Status & prestige", "Value for money", "Community", "Sustainability", "Innovation"],
+      },
+    ],
+  },
+  {
+    heading: "Triggers",
+    fields: [
+      {
+        key: "icp_triggers",
+        label: "What prompts them to buy",
+        hint: "Select all that apply",
+        options: ["New home purchase", "New baby", "Business launch", "Job change", "Relocation", "Marriage / Divorce", "Seasonal / Holiday", "Health concern", "Financial milestone"],
+      },
+    ],
+  },
+];
+
+function ICPChipField({ label, hint, options, selected, onToggle }: {
   label: string;
-  pills: string[];
-  onAdd: (val: string) => void;
-  onRemove: (val: string) => void;
+  hint?: string;
+  options: string[];
+  selected: string[];
+  onToggle: (opt: string) => void;
 }) {
-  const [adding, setAdding] = useState(false);
-  const [draft, setDraft] = useState("");
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 12, alignItems: "flex-start" }}>
-      <div style={{ paddingTop: 5 }}>
-        <div className="br-mono" style={{ fontSize: 11, color: "var(--ink-5)", textTransform: "uppercase", letterSpacing: ".06em" }}>{label}</div>
-        {pills.length === 0 && ICP_EXAMPLES[label] && (
-          <div style={{ fontSize: 10.5, color: "var(--ink-5)", marginTop: 3, lineHeight: 1.4 }}>{ICP_EXAMPLES[label]}</div>
-        )}
+    <div>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 7, marginBottom: 7 }}>
+        <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink-2)" }}>{label}</span>
+        {hint && <span style={{ fontSize: 11, color: "var(--ink-5)" }}>{hint}</span>}
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-        {pills.map((p) => (
-          <span key={p} style={{
-            display: "inline-flex", alignItems: "center", gap: 4,
-            background: "var(--surface-2)", color: "var(--ink-2)", border: "1px solid var(--line)",
-            padding: "2px 8px 2px 10px", fontSize: 11.5, fontWeight: 500, borderRadius: 999,
-          }}>
-            {p}
-            <button type="button" onClick={() => onRemove(p)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-5)", padding: "0 0 0 2px", display: "flex" }}>
-              <Icon name="x" size={10} />
+        {options.map(opt => {
+          const active = selected.includes(opt);
+          return (
+            <button key={opt} type="button" onClick={() => onToggle(opt)} style={{
+              padding: "5px 12px", borderRadius: 999, fontSize: 12.5, cursor: "pointer",
+              fontFamily: "var(--font-sans)", fontWeight: active ? 600 : 400,
+              background: active ? "var(--ink)" : "var(--surface-2)",
+              color: active ? "#fff" : "var(--ink-3)",
+              border: `1px solid ${active ? "var(--ink)" : "var(--line-strong)"}`,
+              transition: "background .1s, color .1s, border-color .1s",
+            }}>
+              {opt}
             </button>
-          </span>
-        ))}
-        {adding ? (
-          <input
-            autoFocus
-            value={draft}
-            onChange={e => setDraft(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === "Enter" && draft.trim()) { onAdd(draft.trim()); setDraft(""); setAdding(false); }
-              if (e.key === "Escape") { setAdding(false); setDraft(""); }
-            }}
-            onBlur={() => { if (draft.trim()) onAdd(draft.trim()); setDraft(""); setAdding(false); }}
-            placeholder={ICP_EXAMPLES[label]?.split(", ")[0]?.replace("e.g. ", "") ?? ""}
-            style={{
-              padding: "3px 10px", fontSize: 11.5, borderRadius: 999, border: "1px solid var(--accent)",
-              background: "var(--accent-soft)", color: "var(--ink)", outline: "none", width: 200,
-              fontFamily: "var(--font-sans)",
-            }}
-          />
-        ) : (
-          <button type="button" onClick={() => setAdding(true)} style={{
-            padding: "3px 8px", fontSize: 11.5, fontFamily: "var(--font-sans)",
-            background: "transparent", border: "1px dashed var(--line-strong)",
-            borderRadius: 999, color: "var(--ink-4)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3,
-          }}>
-            <Icon name="plus" size={10} /> Add
-          </button>
-        )}
+          );
+        })}
       </div>
     </div>
   );
@@ -138,6 +189,25 @@ export default function StrategyPage() {
     setSavedAt(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
   }, []);
 
+  function toggleIcp(fieldKey: IcpField, opt: string) {
+    const stateMap: Record<IcpField, string[]> = {
+      icp_demographics: icpDemographics,
+      icp_geography: icpGeography,
+      icp_mindset: icpMindset,
+      icp_triggers: icpTriggers,
+    };
+    const setMap: Record<IcpField, (v: string[]) => void> = {
+      icp_demographics: setIcpDemographics,
+      icp_geography: setIcpGeography,
+      icp_mindset: setIcpMindset,
+      icp_triggers: setIcpTriggers,
+    };
+    const current = stateMap[fieldKey];
+    const next = current.includes(opt) ? current.filter(x => x !== opt) : [...current, opt];
+    setMap[fieldKey](next);
+    autosave({ [fieldKey]: next });
+  }
+
   function addCompetitor() {
     if (!newComp.trim()) return;
     const url = newComp.trim().replace(/^https?:\/\//, "");
@@ -160,10 +230,6 @@ export default function StrategyPage() {
     autosave({ growth_constraints: next });
   }
 
-  function updateIcp(field: "icp_demographics" | "icp_geography" | "icp_mindset" | "icp_triggers", value: string[]) {
-    autosave({ [field]: value });
-  }
-
   async function handleContinue() {
     const sess = sessionRef.current;
     if (!sess) return;
@@ -180,13 +246,20 @@ export default function StrategyPage() {
     router.push("/onboarding/assets");
   }
 
+  const icpSelections = icpDemographics.length + icpGeography.length + icpMindset.length + icpTriggers.length;
+
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100dvh", background: "var(--bg)" }}>
       <div style={{ width: 28, height: 28, border: "2.5px solid var(--line)", borderTopColor: "var(--ink)", borderRadius: 999, animation: "spin 0.7s linear infinite" }} />
     </div>
   );
 
-  const filledFields = [description, icpDemographics.length, icpGeography.length, competitors.length, constraints.length].filter(Boolean).length;
+  const stateMap: Record<IcpField, string[]> = {
+    icp_demographics: icpDemographics,
+    icp_geography: icpGeography,
+    icp_mindset: icpMindset,
+    icp_triggers: icpTriggers,
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "row", minHeight: "100dvh", background: "var(--bg)" }}>
@@ -204,6 +277,7 @@ export default function StrategyPage() {
               Talk to us like you'd talk to a strategist. We'll structure it for you.
             </p>
 
+            {/* Business description */}
             <Card padding={20} style={{ marginBottom: 16, borderColor: "#ddd6fe", background: "linear-gradient(180deg, #faf8ff 0%, #fff 100%)" }}>
               <Field label="Describe your business in your own words" ai hint="2–4 sentences is plenty">
                 <Textarea
@@ -223,42 +297,49 @@ export default function StrategyPage() {
                   <Icon name="sparkle" size={12} /> Save &amp; extract
                 </button>
               </div>
-              {description.length > 0 && (
-                <div style={{ marginTop: 12, fontSize: 12, color: "var(--ai)", display: "flex", alignItems: "center", gap: 6 }}>
-                  <Icon name="sparkle" size={12} /> Use the fields below to review and refine what we extracted.
-                </div>
-              )}
             </Card>
 
-            <div className="br-g-side" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 16, marginBottom: 24 }}>
+            {/* ICP + Competitors side by side */}
+            <div className="br-g-side" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 16, marginBottom: 16 }}>
+
+              {/* ICP — structured chip selectors */}
               <Card padding={20}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                   <div>
-                    <div className="br-eyebrow">Ideal customer (ICP)</div>
+                    <div className="br-eyebrow">Ideal customer profile</div>
                     <div style={{ fontSize: 16, fontWeight: 600, marginTop: 4, letterSpacing: "-0.01em" }}>Who you serve best</div>
                   </div>
-                  <Pill tone="ai" size="sm" icon="sparkle">Edit freely</Pill>
+                  {icpSelections > 0
+                    ? <Pill tone="ok" size="sm" icon="check">{icpSelections} selected</Pill>
+                    : <Pill tone="neutral" size="sm">Click to select</Pill>
+                  }
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  <ICPRow label="Demographics" pills={icpDemographics}
-                    onAdd={(v) => { const n = [...icpDemographics, v]; setIcpDemographics(n); updateIcp("icp_demographics", n); }}
-                    onRemove={(v) => { const n = icpDemographics.filter(x => x !== v); setIcpDemographics(n); updateIcp("icp_demographics", n); }}
-                  />
-                  <ICPRow label="Geography" pills={icpGeography}
-                    onAdd={(v) => { const n = [...icpGeography, v]; setIcpGeography(n); updateIcp("icp_geography", n); }}
-                    onRemove={(v) => { const n = icpGeography.filter(x => x !== v); setIcpGeography(n); updateIcp("icp_geography", n); }}
-                  />
-                  <ICPRow label="Mindset" pills={icpMindset}
-                    onAdd={(v) => { const n = [...icpMindset, v]; setIcpMindset(n); updateIcp("icp_mindset", n); }}
-                    onRemove={(v) => { const n = icpMindset.filter(x => x !== v); setIcpMindset(n); updateIcp("icp_mindset", n); }}
-                  />
-                  <ICPRow label="Trigger events" pills={icpTriggers}
-                    onAdd={(v) => { const n = [...icpTriggers, v]; setIcpTriggers(n); updateIcp("icp_triggers", n); }}
-                    onRemove={(v) => { const n = icpTriggers.filter(x => x !== v); setIcpTriggers(n); updateIcp("icp_triggers", n); }}
-                  />
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                  {ICP_SECTIONS.map((section, si) => (
+                    <div key={section.heading}>
+                      {si > 0 && <div style={{ height: 1, background: "var(--line)", margin: "14px 0" }} />}
+                      <div style={{ fontSize: 11, fontWeight: 600, color: "var(--ink-5)", letterSpacing: ".07em", textTransform: "uppercase", marginBottom: 10 }}>
+                        {section.heading}
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                        {section.fields.map(field => (
+                          <ICPChipField
+                            key={`${field.key}-${field.label}`}
+                            label={field.label}
+                            hint={field.hint}
+                            options={field.options}
+                            selected={stateMap[field.key]}
+                            onToggle={(opt) => toggleIcp(field.key, opt)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </Card>
 
+              {/* Competitors */}
               <Card padding={20}>
                 <div className="br-eyebrow" style={{ marginBottom: 6 }}>Competitors</div>
                 <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 12, letterSpacing: "-0.01em" }}>Who you're up against</div>
@@ -302,27 +383,31 @@ export default function StrategyPage() {
               </Card>
             </div>
 
+            {/* Growth constraints */}
             <Card padding={20}>
               <div className="br-eyebrow" style={{ marginBottom: 6 }}>Growth constraints</div>
               <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 12, letterSpacing: "-0.01em" }}>What's actually in the way?</div>
               <div className="br-g-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                {CONSTRAINTS.map((c) => {
-                  const on = constraints.includes(c);
+                {CONSTRAINTS.map(({ label, desc }) => {
+                  const on = constraints.includes(label);
                   return (
-                    <label key={c} onClick={() => toggleConstraint(c)} style={{
-                      display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 8, cursor: "pointer",
+                    <label key={label} onClick={() => toggleConstraint(label)} style={{
+                      display: "flex", alignItems: "flex-start", gap: 10, padding: "11px 12px", borderRadius: 10, cursor: "pointer",
                       background: on ? "var(--warn-soft)" : "var(--surface-2)",
                       border: `1px solid ${on ? "#fcd34d" : "var(--line)"}`,
                     }}>
                       <div style={{
-                        width: 16, height: 16, borderRadius: 4, flexShrink: 0,
+                        width: 16, height: 16, borderRadius: 4, flexShrink: 0, marginTop: 2,
                         background: on ? "var(--ink)" : "var(--surface)",
                         border: on ? "1px solid var(--ink)" : "1.5px solid var(--line-strong)",
                         display: "grid", placeItems: "center", color: "#fff",
                       }}>
                         {on && <Icon name="check" size={10} strokeWidth={3} />}
                       </div>
-                      <span style={{ fontSize: 13, color: "var(--ink-2)" }}>{c}</span>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-2)", lineHeight: 1.3 }}>{label}</div>
+                        <div style={{ fontSize: 11.5, color: "var(--ink-4)", marginTop: 3, lineHeight: 1.45 }}>{desc}</div>
+                      </div>
                     </label>
                   );
                 })}
@@ -331,13 +416,13 @@ export default function StrategyPage() {
 
             <div style={{ marginTop: 16 }}>
               <AICallout title="Bridge intelligence">
-                Everything you enter here directly shapes your proposal — ICP data feeds targeting, competitors feed gap analysis, and constraints become the opening brief.
+                ICP selections feed audience targeting directly — demographics set ad parameters, location narrows geo-targeting, and trigger events time your campaigns.
               </AICallout>
             </div>
           </div>
         </div>
         <StepFooter
-          note={saving ? "Saving…" : savedAt ? `Autosaved · ${savedAt}` : `${filledFields} fields filled`}
+          note={saving ? "Saving…" : savedAt ? `Autosaved · ${savedAt}` : icpSelections > 0 ? `${icpSelections} ICP attributes selected` : undefined}
           continueLabel="Continue to Assets"
           onBack={() => router.push("/onboarding/services")}
           onContinue={handleContinue}
