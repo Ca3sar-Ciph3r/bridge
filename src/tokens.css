@@ -1,0 +1,145 @@
+/* Bridge — design tokens. Stripe-clean, warm neutral. */
+:root {
+  /* surfaces */
+  --bg: #fafaf9;
+  --surface: #ffffff;
+  --surface-2: #f5f5f4;
+  --surface-3: #ebeae7;
+  --line: #e7e5e4;
+  --line-strong: #d6d3d1;
+  --line-faint: #efeeec;
+
+  /* text */
+  --ink: #0c0a09;
+  --ink-2: #292524;
+  --ink-3: #57534e;
+  --ink-4: #8a8580;
+  --ink-5: #a8a29e;
+
+  /* accent — Bridge indigo */
+  --accent: #4f46e5;
+  --accent-2: #6366f1;
+  --accent-soft: #eef0ff;
+  --accent-soft-2: #e0e3ff;
+  --accent-ink: #312e81;
+
+  /* semantic */
+  --ok: #047857;
+  --ok-soft: #ecfdf5;
+  --warn: #b45309;
+  --warn-soft: #fffbeb;
+  --err: #b91c1c;
+  --err-soft: #fef2f2;
+  --ai: #7c3aed;
+  --ai-soft: #f5f3ff;
+
+  /* type */
+  --font-sans: "Hanken Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-display: "Hanken Grotesk", -apple-system, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+
+  /* spacing scale */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px;
+  --s-6: 24px; --s-7: 32px; --s-8: 40px; --s-9: 56px; --s-10: 72px;
+
+  /* radius */
+  --r-1: 4px; --r-2: 6px; --r-3: 8px; --r-4: 12px; --r-5: 16px; --r-6: 20px;
+
+  /* shadows */
+  --shadow-1: 0 1px 0 rgba(15, 15, 15, .04), 0 1px 2px rgba(15, 15, 15, .04);
+  --shadow-2: 0 1px 0 rgba(15, 15, 15, .04), 0 4px 12px -2px rgba(15, 15, 15, .06), 0 12px 32px -8px rgba(15, 15, 15, .08);
+  --shadow-3: 0 1px 0 rgba(15, 15, 15, .04), 0 8px 24px -6px rgba(15, 15, 15, .08), 0 24px 64px -16px rgba(15, 15, 15, .12);
+  --shadow-focus: 0 0 0 4px rgba(79, 70, 229, .14);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01", "cv11";
+}
+
+/* artboard frame baseline */
+.br-frame {
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* type */
+.br-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  font-weight: 600;
+  font-feature-settings: "ss01";
+}
+.br-mono { font-family: var(--font-mono); font-size: 12px; letter-spacing: -0.01em; }
+.br-h1 { font-size: 34px; line-height: 1.08; letter-spacing: -0.025em; font-weight: 600; }
+.br-h2 { font-size: 24px; line-height: 1.15; letter-spacing: -0.02em; font-weight: 600; }
+.br-h3 { font-size: 18px; line-height: 1.25; letter-spacing: -0.015em; font-weight: 600; }
+.br-body { font-size: 14px; line-height: 1.55; color: var(--ink-3); }
+.br-bodyLg { font-size: 16px; line-height: 1.55; color: var(--ink-3); }
+.br-cap { font-size: 12px; line-height: 1.4; color: var(--ink-4); }
+.br-num { font-variant-numeric: tabular-nums; }
+
+/* tiny scrollbar inside artboards */
+.br-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+.br-scroll::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 8px; }
+.br-scroll::-webkit-scrollbar-track { background: transparent; }
+
+/* focus ring */
+.br-focus:focus-visible { outline: none; box-shadow: var(--shadow-focus); border-color: var(--accent); }
+
+/* keyframes */
+@keyframes br-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes br-pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .55; }
+}
+@keyframes br-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.br-fade-up { animation: br-fade-up .4s cubic-bezier(.2, .8, .2, 1) both; }
+
+/* wordmark */
+.br-wordmark {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+}
+.br-wordmark .br-mark {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  position: relative;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.2), 0 1px 2px rgba(79,70,229,.4);
+}
+.br-wordmark .br-mark::before, .br-wordmark .br-mark::after {
+  content: ""; position: absolute; left: 4px; right: 4px; height: 1.5px;
+  background: rgba(255,255,255,.9); border-radius: 2px;
+}
+.br-wordmark .br-mark::before { top: 7px; }
+.br-wordmark .br-mark::after { bottom: 7px; }
