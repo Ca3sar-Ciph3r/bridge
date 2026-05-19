@@ -43,15 +43,8 @@ export async function middleware(request: NextRequest) {
     url.pathname = "/";
     return NextResponse.redirect(url);
   }
-
-  // Agency routes: only the admin email may access them
-  if (pathname.startsWith("/agency") && user) {
-    if (user.email !== process.env.AGENCY_ADMIN_EMAIL) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/";
-      return NextResponse.redirect(url);
-    }
-  }
+  // Agency email check is enforced in src/app/agency/layout.tsx (server component)
+  // — not here, because Edge middleware cannot reliably read non-NEXT_PUBLIC_ env vars.
 
   if (user && isAuthRoute && pathname !== "/") {
     // Allow landing page even when signed in (user might revisit)
