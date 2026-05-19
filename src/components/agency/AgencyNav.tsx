@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
+import { SignOutButton } from "@/components/ui/SignOutButton";
 
 const NAV = [
   { id: "submissions", label: "Submissions",  icon: "file",     path: "/agency/submissions" },
@@ -19,7 +20,7 @@ export function AgencyNav() {
     }}>
       {/* Wordmark */}
       <div style={{ padding: "0 8px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Link href="/" className="br-wordmark" style={{ fontSize: 15 }}>
+        <Link href="/agency/submissions" className="br-wordmark" style={{ fontSize: 15 }}>
           <span className="br-mark" />Bridge
         </Link>
         <span className="br-mono" style={{ fontSize: 10, color: "var(--ink-5)", background: "var(--surface-2)", border: "1px solid var(--line)", borderRadius: 4, padding: "2px 5px" }}>
@@ -52,10 +53,10 @@ export function AgencyNav() {
         <div style={{ padding: "6px 10px", fontSize: 11.5, color: "var(--ink-4)" }}>
           Signed in as <strong style={{ color: "var(--ink-2)" }}>Luke Gunn</strong>
         </div>
-        <Link href="/auth/signout" style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, textDecoration: "none", color: "var(--ink-4)", fontSize: 12 }}>
+        <SignOutButton style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, color: "var(--ink-4)", fontSize: 12 }}>
           <Icon name="arrow_right" size={13} />
           Sign out
-        </Link>
+        </SignOutButton>
       </div>
     </aside>
   );

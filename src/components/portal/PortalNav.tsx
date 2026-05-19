@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
+import { SignOutButton } from "@/components/ui/SignOutButton";
 import { PORTAL_SECTIONS, type PortalSectionId } from "@/lib/types";
 
 interface PortalNavProps {
@@ -61,10 +62,10 @@ export function PortalNav({ clientName, companyName }: PortalNavProps) {
           <div style={{ width: 7, height: 7, borderRadius: 999, background: "var(--ok)", animation: "br-pulse-soft 2s ease-in-out infinite", flexShrink: 0 }}/>
           <span style={{ fontSize: 11.5, color: "var(--ink-4)" }}>Managed by Digital Native</span>
         </div>
-        <Link href="/auth/signout" style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 8, textDecoration: "none", color: "var(--ink-4)", fontSize: 12 }}>
+        <SignOutButton style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 8, color: "var(--ink-4)", fontSize: 12 }}>
           <Icon name="arrow_right" size={13}/>
           Sign out
-        </Link>
+        </SignOutButton>
       </div>
     </aside>
   );

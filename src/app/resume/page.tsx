@@ -6,6 +6,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Pill } from "@/components/ui/Chip";
+import { SignOutButton } from "@/components/ui/SignOutButton";
 import { NAV_SECTIONS } from "@/lib/types";
 
 export default async function ResumePage() {
@@ -65,7 +66,7 @@ export default async function ResumePage() {
               </Link>
             </div>
             <div style={{ marginTop: 24, textAlign: "center" }}>
-              <Link href="/auth/signout" style={{ fontSize: 12, color: "var(--ink-5)", textDecoration: "none" }}>Sign out</Link>
+              <SignOutButton style={{ fontSize: 12, color: "var(--ink-5)" }}>Sign out</SignOutButton>
             </div>
           </div>
         </div>
@@ -179,7 +180,7 @@ export default async function ResumePage() {
 
       <div style={{ padding: "16px 56px", borderTop: "1px solid var(--line)", fontSize: 11, color: "var(--ink-5)", display: "flex", justifyContent: "space-between" }}>
         <span>Session active · 7 days remaining</span>
-        <span>Not you? <Link href="/auth/signout" style={{ color: "var(--ink-3)", fontWeight: 500, textDecoration: "underline", textUnderlineOffset: 3 }}>Sign out</Link></span>
+        <span>Not you? <SignOutButton style={{ color: "var(--ink-3)", fontWeight: 500, textDecoration: "underline", textUnderlineOffset: 3 }}>Sign out</SignOutButton></span>
       </div>
     </div>
   );
