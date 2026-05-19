@@ -24,9 +24,16 @@ export async function getPortalClient(): Promise<PortalClient | null> {
 export async function getDeliverables(): Promise<Deliverable[]> {
   const clientId = await getClientId();
   if (!clientId) return [];
-  const supabase = await createClient();
-  const { data } = await supabase.from("deliverables").select("*").eq("client_id", clientId).order("created_at", { ascending: false });
-  return (data ?? []) as Deliverable[];
+  const admin = createAdminClient();
+  const { data } = await admin.from("deliverables").select("*").eq("client_id", clientId).order("created_at", { ascending: false });
+  const rows = (data ?? []) as Deliverable[];
+  return Promise.all(rows.map(async (d) => {
+    if (d.image_url && !d.image_url.startsWith("http")) {
+      const { data: signed } = await admin.storage.from("client-files").createSignedUrl(d.image_url, 3600);
+      return { ...d, image_url: signed?.signedUrl ?? null };
+    }
+    return d;
+  }));
 }
 
 export async function updateDeliverableStatus(id: string, status: Deliverable["status"], changes_note?: string): Promise<void> {
@@ -45,9 +52,16 @@ export async function getReports(): Promise<Report[]> {
 export async function getInvoices(): Promise<Invoice[]> {
   const clientId = await getClientId();
   if (!clientId) return [];
-  const supabase = await createClient();
-  const { data } = await supabase.from("invoices").select("*").eq("client_id", clientId).order("issued_date", { ascending: false });
-  return (data ?? []) as Invoice[];
+  const admin = createAdminClient();
+  const { data } = await admin.from("invoices").select("*").eq("client_id", clientId).order("issued_date", { ascending: false });
+  const rows = (data ?? []) as Invoice[];
+  return Promise.all(rows.map(async (inv) => {
+    if (inv.pdf_url && !inv.pdf_url.startsWith("http")) {
+      const { data: signed } = await admin.storage.from("client-files").createSignedUrl(inv.pdf_url, 3600);
+      return { ...inv, pdf_url: signed?.signedUrl ?? null };
+    }
+    return inv;
+  }));
 }
 
 export async function getProjects(): Promise<Project[]> {

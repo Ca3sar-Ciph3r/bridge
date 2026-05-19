@@ -1,7 +1,26 @@
 "use server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
-import type { AgencyStatus, PortalClient } from "@/lib/types";
+import type { AgencyStatus, PortalClient, Deliverable, Invoice } from "@/lib/types";
+
+const BUCKET = "client-files";
+
+// ── Signed URL helper ─────────────────────────────────────────
+
+async function withSignedUrl<T extends { image_url?: string | null; pdf_url?: string | null }>(
+  items: T[]
+): Promise<T[]> {
+  const admin = createAdminClient();
+  return Promise.all(
+    items.map(async (item) => {
+      const path = item.image_url ?? item.pdf_url;
+      if (!path || path.startsWith("http")) return item;
+      const key = "image_url" in item && item.image_url === path ? "image_url" : "pdf_url";
+      const { data } = await admin.storage.from(BUCKET).createSignedUrl(path, 3600);
+      return { ...item, [key]: data?.signedUrl ?? null };
+    })
+  );
+}
 
 // ── Submissions ───────────────────────────────────────────────
 
@@ -48,7 +67,6 @@ export async function setAgencyStatus(sessionId: string, agencyStatus: AgencySta
       .single();
 
     if (session?.user_id) {
-      // Upsert so the record is created even if submitOnboarding never ran
       await supabase.from("portal_clients").upsert(
         {
           id: session.user_id,
@@ -105,4 +123,111 @@ export async function updatePortalClient(clientId: string, data: Partial<PortalC
   revalidatePath(`/agency/clients/${clientId}`);
   revalidatePath("/agency/clients");
   return { success: true };
+}
+
+// ── Deliverables (agency) ─────────────────────────────────────
+
+export async function getClientDeliverables(clientId: string): Promise<Deliverable[]> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("deliverables")
+    .select("*")
+    .eq("client_id", clientId)
+    .order("created_at", { ascending: false });
+  return withSignedUrl((data ?? []) as Deliverable[]) as Promise<Deliverable[]>;
+}
+
+export async function addDeliverable(
+  clientId: string,
+  payload: {
+    title: string;
+    caption: string | null;
+    platform: Deliverable["platform"];
+    scheduled_date: string | null;
+    file_path: string | null;
+  }
+): Promise<{ error?: string }> {
+  const admin = createAdminClient();
+  const { error } = await admin.from("deliverables").insert({
+    client_id: clientId,
+    title: payload.title,
+    caption: payload.caption,
+    platform: payload.platform,
+    scheduled_date: payload.scheduled_date,
+    image_url: payload.file_path,
+    status: "pending",
+  });
+  if (error) return { error: error.message };
+  revalidatePath(`/agency/clients/${clientId}`);
+  revalidatePath("/portal/deliverables");
+  return {};
+}
+
+export async function deleteDeliverable(id: string, clientId: string, filePath: string | null): Promise<void> {
+  const admin = createAdminClient();
+  if (filePath && !filePath.startsWith("http")) {
+    await admin.storage.from(BUCKET).remove([filePath]);
+  }
+  await admin.from("deliverables").delete().eq("id", id);
+  revalidatePath(`/agency/clients/${clientId}`);
+  revalidatePath("/portal/deliverables");
+}
+
+// ── Invoices (agency) ─────────────────────────────────────────
+
+export async function getClientInvoices(clientId: string): Promise<Invoice[]> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("invoices")
+    .select("*")
+    .eq("client_id", clientId)
+    .order("issued_date", { ascending: false });
+  return withSignedUrl((data ?? []) as Invoice[]) as Promise<Invoice[]>;
+}
+
+export async function addInvoice(
+  clientId: string,
+  payload: {
+    invoice_number: string;
+    amount: number;
+    description: string | null;
+    issued_date: string | null;
+    due_date: string | null;
+    status: Invoice["status"];
+    file_path: string | null;
+  }
+): Promise<{ error?: string }> {
+  const admin = createAdminClient();
+  const { error } = await admin.from("invoices").insert({
+    client_id: clientId,
+    invoice_number: payload.invoice_number,
+    amount: payload.amount,
+    description: payload.description,
+    issued_date: payload.issued_date,
+    due_date: payload.due_date,
+    status: payload.status,
+    pdf_url: payload.file_path,
+    currency: "ZAR",
+  });
+  if (error) return { error: error.message };
+  revalidatePath(`/agency/clients/${clientId}`);
+  revalidatePath("/portal/invoices");
+  return {};
+}
+
+export async function updateInvoiceStatus(id: string, clientId: string, status: Invoice["status"]): Promise<void> {
+  const admin = createAdminClient();
+  await admin.from("invoices").update({ status }).eq("id", id);
+  revalidatePath(`/agency/clients/${clientId}`);
+  revalidatePath("/portal/invoices");
+}
+
+export async function deleteInvoice(id: string, clientId: string, filePath: string | null): Promise<void> {
+  const admin = createAdminClient();
+  if (filePath && !filePath.startsWith("http")) {
+    await admin.storage.from(BUCKET).remove([filePath]);
+  }
+  await admin.from("invoices").delete().eq("id", id);
+  revalidatePath(`/agency/clients/${clientId}`);
+  revalidatePath("/portal/invoices");
 }

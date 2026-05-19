@@ -1,10 +1,13 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getAgencyClient } from "@/lib/actions/agency";
+import { getAgencyClient, getClientDeliverables, getClientInvoices } from "@/lib/actions/agency";
 import { Icon } from "@/components/ui/Icon";
 import { Pill } from "@/components/ui/Chip";
 import { ClientEditor } from "./ClientEditor";
 import { PortalUrlBox } from "./PortalUrlBox";
+import { DeliverableManager } from "./DeliverableManager";
+import { InvoiceManager } from "./InvoiceManager";
+import { ClientDetailTabs } from "./ClientDetailTabs";
 
 function formatDate(d: string | null) {
   if (!d) return "—";
@@ -22,13 +25,17 @@ function StatTile({ label, value }: { label: string; value: string | number }) {
 
 export default async function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { client, projects, invoices, deliverables, reports } = await getAgencyClient(id);
+  const [{ client, projects, invoices: rawInvoices, deliverables: rawDeliverables, reports }, deliverables, invoices] = await Promise.all([
+    getAgencyClient(id),
+    getClientDeliverables(id),
+    getClientInvoices(id),
+  ]);
   if (!client) notFound();
 
   const retainerTone = client.retainer_status === "active" ? "ok" : client.retainer_status === "paused" ? "warn" : "err";
 
   return (
-    <div style={{ padding: "32px 40px", maxWidth: 860 }}>
+    <div style={{ padding: "32px 40px", maxWidth: 900 }}>
       {/* Back */}
       <Link href="/agency/clients" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--ink-4)", textDecoration: "none", marginBottom: 20 }}>
         <span style={{ display: "inline-flex", transform: "rotate(180deg)" }}><Icon name="arrow_right" size={13} /></span> Back to clients
@@ -59,13 +66,12 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
         <StatTile label="Reports"      value={reports.length} />
       </div>
 
-      {/* Editor */}
-      <ClientEditor client={client} />
-
-      {/* Portal link */}
-      {client.retainer_status === "active" && (
-        <PortalUrlBox email={client.email} />
-      )}
+      {/* Tabbed sections */}
+      <ClientDetailTabs
+        client={client}
+        deliverables={deliverables}
+        invoices={invoices}
+      />
     </div>
   );
 }
