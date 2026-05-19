@@ -13,8 +13,65 @@ export default async function ResumePage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/");
 
-  // Agency admin goes straight to their dashboard
-  if (user.email === process.env.AGENCY_ADMIN_EMAIL) redirect("/agency/submissions");
+  // Agency admin gets a choice screen
+  if (user.email === process.env.AGENCY_ADMIN_EMAIL) {
+    return (
+      <div style={{ background: "var(--bg)", display: "flex", flexDirection: "column", minHeight: "100dvh" }}>
+        <div className="br-top-nav" style={{ padding: "24px 56px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Link href="/" className="br-wordmark"><span className="br-mark"/>Bridge</Link>
+          <span className="br-mono" style={{ fontSize: 11, color: "var(--ink-5)" }}>AGENCY · LUKE GUNN</span>
+        </div>
+        <div style={{ flex: 1, display: "grid", placeItems: "center", padding: "24px 32px" }}>
+          <div style={{ width: 560, maxWidth: "100%" }} className="br-fade-up">
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 8 }}>Welcome back</div>
+            <h1 style={{ fontSize: 32, fontWeight: 700, letterSpacing: "-0.03em", marginBottom: 6, lineHeight: 1.1, fontFamily: "var(--font-sans)" }}>
+              Where do you want to go?
+            </h1>
+            <p style={{ fontSize: 15, color: "var(--ink-3)", lineHeight: 1.55, marginBottom: 28 }}>
+              You&apos;re signed in as the agency owner. Choose your destination.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <Link href="/agency/submissions" style={{ textDecoration: "none" }}>
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 16, padding: "20px 22px",
+                  background: "var(--ink)", borderRadius: 14, boxShadow: "0 4px 16px -4px rgba(0,0,0,.25)",
+                  transition: "opacity .15s",
+                }}>
+                  <div style={{ width: 42, height: 42, borderRadius: 10, background: "rgba(255,255,255,.1)", display: "grid", placeItems: "center", flexShrink: 0 }}>
+                    <Icon name="layers" size={20} color="#fff"/>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", letterSpacing: "-0.01em" }}>Agency Dashboard</div>
+                    <div style={{ fontSize: 13, color: "rgba(255,255,255,.55)", marginTop: 2 }}>Manage submissions, activate portals, edit clients</div>
+                  </div>
+                  <Icon name="arrow_right" size={16} color="rgba(255,255,255,.5)"/>
+                </div>
+              </Link>
+              <Link href="/onboarding/snapshot" style={{ textDecoration: "none" }}>
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 16, padding: "20px 22px",
+                  background: "var(--surface)", border: "1px solid var(--line)", borderRadius: 14,
+                  boxShadow: "var(--shadow-1)", transition: "border-color .15s",
+                }}>
+                  <div style={{ width: 42, height: 42, borderRadius: 10, background: "var(--surface-2)", border: "1px solid var(--line)", display: "grid", placeItems: "center", flexShrink: 0 }}>
+                    <Icon name="search" size={20} color="var(--ink-3)"/>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: "var(--ink)", letterSpacing: "-0.01em" }}>Preview Onboarding</div>
+                    <div style={{ fontSize: 13, color: "var(--ink-4)", marginTop: 2 }}>Walk through the client experience from the start</div>
+                  </div>
+                  <Icon name="arrow_right" size={16} color="var(--ink-5)"/>
+                </div>
+              </Link>
+            </div>
+            <div style={{ marginTop: 24, textAlign: "center" }}>
+              <Link href="/auth/signout" style={{ fontSize: 12, color: "var(--ink-5)", textDecoration: "none" }}>Sign out</Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const session = await getOrCreateSession();
   if (!session) redirect("/");
