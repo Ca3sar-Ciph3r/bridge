@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Bridge — Client Onboarding · Digital Native Agency</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="src/tokens.css">
+
+<style>
+  html, body { background: #0a0a0a; }
+  body { margin: 0; font-family: var(--font-sans); }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="src/ui.jsx"></script>
+<script type="text/babel" src="src/screens-1.jsx"></script>
+<script type="text/babel" src="src/screens-2.jsx"></script>
+<script type="text/babel" src="src/screens-3.jsx"></script>
+<script type="text/babel" src="src/mobile.jsx"></script>
+<script type="text/babel" src="src/mobile-extras.jsx"></script>
+<script type="text/babel" src="src/flowmap.jsx"></script>
+
+<script type="text/babel">
+/* global React, ReactDOM, DesignCanvas, DCSection, DCArtboard,
+   ScreenLanding, ScreenMagicLink, ScreenSnapshot, ScreenServices,
+   ScreenStrategy, ScreenAssets, ScreenGoals, ScreenReview, ScreenComplete,
+   ScreenResume, ScreenEdgeStates, ScreenSchema, ScreenIntegration,
+   MobileServicesScreen, MobileReviewScreen,
+   MobileLanding, MobileMagicLink, MobileResume, MobileSnapshot, MobileStrategy, MobileAssets, MobileGoals, MobileComplete,
+   FlowMap */
+
+const DESKTOP_W = 1320;
+const DESKTOP_H = 860;
+const MOBILE_W = 392;
+const MOBILE_H = 800;
+
+function App() {
+  return (
+    <DesignCanvas title="Bridge · Client Onboarding System" subtitle="Powered by Digital Native Agency — multi-tool ecosystem (Bridge → Dock · Compass · Deck · Radar · Beacon)">
+
+      <DCSection id="entry" title="Entry" subtitle="Landing → auth → magic link confirmation · plus the returning-user state">
+        <DCArtboard id="01-landing"     label="01 · Landing"               width={DESKTOP_W} height={DESKTOP_H}><ScreenLanding/></DCArtboard>
+        <DCArtboard id="02-magic-link"  label="02 · Magic link sent"       width={DESKTOP_W} height={DESKTOP_H}><ScreenMagicLink/></DCArtboard>
+        <DCArtboard id="02b-resume"     label="02b · Returning user · auto-resume" width={DESKTOP_W} height={DESKTOP_H}><ScreenResume/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="flow" title="Onboarding flow" subtitle="Six sections — adaptive, autosaving, resumable">
+        <DCArtboard id="03-snapshot"    label="03 · A · Business Snapshot" width={DESKTOP_W} height={DESKTOP_H}><ScreenSnapshot/></DCArtboard>
+        <DCArtboard id="04-services"    label="04 · B · Services + branching" width={DESKTOP_W} height={DESKTOP_H}><ScreenServices/></DCArtboard>
+        <DCArtboard id="05-strategy"    label="05 · C · Strategy + ICP"    width={DESKTOP_W} height={DESKTOP_H}><ScreenStrategy/></DCArtboard>
+        <DCArtboard id="06-assets"      label="06 · D · Assets"            width={DESKTOP_W} height={DESKTOP_H}><ScreenAssets/></DCArtboard>
+        <DCArtboard id="07-goals"       label="07 · E · Goals"             width={DESKTOP_W} height={DESKTOP_H}><ScreenGoals/></DCArtboard>
+        <DCArtboard id="08-review"      label="08 · F · Review"            width={DESKTOP_W} height={DESKTOP_H}><ScreenReview/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="handoff" title="Handoff" subtitle="Submission, downstream pipeline to Dock/Compass/Deck/Radar/Beacon">
+        <DCArtboard id="09-complete"    label="09 · Submitted + pipeline" width={DESKTOP_W} height={DESKTOP_H}><ScreenComplete/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="edges" title="Edge & error states" subtitle="The unhappy paths · all preserve state">
+        <DCArtboard id="10-edge"        label="10 · Edge states · 4 scenarios" width={DESKTOP_W} height={DESKTOP_H}><ScreenEdgeStates/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="mobile" title="Mobile" subtitle="Same flow, mobile-first — all nine surfaces at iPhone width">
+        <DCArtboard id="m01-landing"      label="Mobile · 01 · Landing"          width={MOBILE_W} height={MOBILE_H}><MobileLanding/></DCArtboard>
+        <DCArtboard id="m02-magic"        label="Mobile · 02 · Magic link"       width={MOBILE_W} height={MOBILE_H}><MobileMagicLink/></DCArtboard>
+        <DCArtboard id="m02b-resume"      label="Mobile · 02b · Resume"          width={MOBILE_W} height={MOBILE_H}><MobileResume/></DCArtboard>
+        <DCArtboard id="m03-snapshot"     label="Mobile · 03 · Snapshot"         width={MOBILE_W} height={MOBILE_H}><MobileSnapshot/></DCArtboard>
+        <DCArtboard id="m04-services"     label="Mobile · 04 · Services"         width={MOBILE_W} height={MOBILE_H}><MobileServicesScreen/></DCArtboard>
+        <DCArtboard id="m05-strategy"     label="Mobile · 05 · Strategy"         width={MOBILE_W} height={MOBILE_H}><MobileStrategy/></DCArtboard>
+        <DCArtboard id="m06-assets"       label="Mobile · 06 · Assets"           width={MOBILE_W} height={MOBILE_H}><MobileAssets/></DCArtboard>
+        <DCArtboard id="m07-goals"        label="Mobile · 07 · Goals"            width={MOBILE_W} height={MOBILE_H}><MobileGoals/></DCArtboard>
+        <DCArtboard id="m08-review"       label="Mobile · 08 · Review"           width={MOBILE_W} height={MOBILE_H}><MobileReviewScreen/></DCArtboard>
+        <DCArtboard id="m09-complete"     label="Mobile · 09 · Complete"         width={MOBILE_W} height={MOBILE_H}><MobileComplete/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="map" title="UX flow map" subtitle="Full architecture — every node, every branch, autosave + handoff">
+        <DCArtboard id="flow-map"       label="Bridge — flow architecture" width={1400} height={780}><FlowMap/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="contracts" title="Data & integration" subtitle="What Bridge actually produces, and where it goes">
+        <DCArtboard id="12-schema"      label="Data schema · the JSON output" width={1400} height={760}><ScreenSchema/></DCArtboard>
+        <DCArtboard id="13-integration" label="Integration map · Bridge → Dock · Compass · Deck · Radar · Beacon" width={1400} height={680}><ScreenIntegration/></DCArtboard>
+      </DCSection>
+
+    </DesignCanvas>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App/>);
+</script>
+
+</body>
+</html>

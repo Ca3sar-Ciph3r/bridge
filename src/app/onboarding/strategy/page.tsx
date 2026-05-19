@@ -242,8 +242,8 @@ export default function StrategyPage() {
       competitors,
       growth_constraints: constraints,
     });
-    await updateSessionSection(sess.id, "assets");
-    router.push("/onboarding/assets");
+    await updateSessionSection(sess.id, "goals");
+    router.push("/onboarding/goals");
   }
 
   const icpSelections = icpDemographics.length + icpGeography.length + icpMindset.length + icpTriggers.length;

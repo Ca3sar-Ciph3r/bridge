@@ -30,10 +30,14 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const isOnboardingRoute = pathname.startsWith("/onboarding") || pathname.startsWith("/complete");
+  const isProtectedRoute =
+    pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/complete") ||
+    pathname.startsWith("/portal") ||
+    pathname.startsWith("/resume");
   const isAuthRoute = pathname === "/" || pathname === "/magic-link" || pathname.startsWith("/auth");
 
-  if (isOnboardingRoute && !user) {
+  if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);

@@ -357,7 +357,7 @@ export default function GoalsPage() {
         <StepFooter
           note={saving ? "Saving…" : savedAt ? `Autosaved · ${savedAt}` : `${selectedGoals.length} goals selected`}
           continueLabel="Continue to Review"
-          onBack={() => router.push("/onboarding/access")}
+          onBack={() => router.push("/onboarding/strategy")}
           onContinue={handleContinue}
         />
       </div>

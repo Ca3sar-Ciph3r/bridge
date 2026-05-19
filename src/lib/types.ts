@@ -1,4 +1,4 @@
-export type SectionId = "snapshot" | "services" | "strategy" | "assets" | "access" | "goals" | "review";
+export type SectionId = "snapshot" | "services" | "strategy" | "goals" | "review";
 
 export interface NavSection {
   id: SectionId;
@@ -12,10 +12,8 @@ export const NAV_SECTIONS: NavSection[] = [
   { id: "snapshot", title: "Business Snapshot", subtitle: "Industry, location, scale",  path: "/onboarding/snapshot", index: 0 },
   { id: "services", title: "Services",          subtitle: "What we're scoping",          path: "/onboarding/services", index: 1 },
   { id: "strategy", title: "Strategy Inputs",   subtitle: "ICP, competitors, voice",     path: "/onboarding/strategy", index: 2 },
-  { id: "assets",   title: "Assets",            subtitle: "Logos, creative, photos",     path: "/onboarding/assets",   index: 3 },
-  { id: "access",   title: "Account Access",    subtitle: "Platform permissions",        path: "/onboarding/access",   index: 4 },
-  { id: "goals",    title: "Goals",             subtitle: "Targets & priorities",        path: "/onboarding/goals",    index: 5 },
-  { id: "review",   title: "Review",            subtitle: "Confirm & submit",            path: "/onboarding/review",   index: 6 },
+  { id: "goals",    title: "Goals",             subtitle: "Targets & priorities",        path: "/onboarding/goals",    index: 3 },
+  { id: "review",   title: "Review",            subtitle: "Confirm & submit",            path: "/onboarding/review",   index: 4 },
 ];
 
 // ── Database row shapes ──────────────────────────────────────
@@ -124,4 +122,101 @@ export interface GoalsData {
   williston_fill_pct: number | null;
   numeric_targets?: Record<string, number>;
   priority_order: string[];
+}
+
+// ── Portal types ─────────────────────────────────────────────
+
+export type PortalSectionId = "dashboard" | "reports" | "deliverables" | "invoices" | "projects" | "brand" | "access";
+
+export const PORTAL_SECTIONS: { id: PortalSectionId; title: string; icon: string; path: string }[] = [
+  { id: "dashboard",    title: "Dashboard",      icon: "target",    path: "/portal/dashboard"    },
+  { id: "reports",      title: "Reports",        icon: "bolt",      path: "/portal/reports"      },
+  { id: "deliverables", title: "Deliverables",   icon: "layers",    path: "/portal/deliverables" },
+  { id: "invoices",     title: "Invoices",       icon: "file",      path: "/portal/invoices"     },
+  { id: "projects",     title: "Project Tracker",icon: "search",    path: "/portal/projects"     },
+  { id: "brand",        title: "Brand Assets",   icon: "star",      path: "/portal/brand"        },
+  { id: "access",       title: "Account Access", icon: "lock",      path: "/portal/access"       },
+];
+
+export interface PortalClient {
+  id: string;
+  name: string | null;
+  company_name: string | null;
+  email: string | null;
+  retainer_amount: number | null;
+  retainer_currency: string;
+  retainer_status: "active" | "paused" | "cancelled";
+  package: string | null;
+  start_date: string | null;
+  created_at: string;
+}
+
+export interface Deliverable {
+  id: string;
+  client_id: string;
+  title: string;
+  caption: string | null;
+  image_url: string | null;
+  platform: "instagram" | "facebook" | "linkedin" | "tiktok" | "google" | "twitter" | "other";
+  status: "pending" | "approved" | "changes_requested";
+  changes_note: string | null;
+  scheduled_date: string | null;
+  created_at: string;
+}
+
+export interface Report {
+  id: string;
+  client_id: string;
+  month: string;
+  title: string | null;
+  summary: string | null;
+  metrics: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface Invoice {
+  id: string;
+  client_id: string;
+  invoice_number: string;
+  amount: number;
+  currency: string;
+  status: "pending" | "paid" | "overdue" | "draft";
+  due_date: string | null;
+  issued_date: string | null;
+  description: string | null;
+  pdf_url: string | null;
+  created_at: string;
+}
+
+export interface Project {
+  id: string;
+  client_id: string;
+  title: string;
+  description: string | null;
+  status: "in_progress" | "completed" | "upcoming";
+  due_date: string | null;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface BrandAsset {
+  id: string;
+  client_id: string;
+  name: string;
+  type: "logo" | "font" | "color" | "guideline" | "image" | "document" | "other";
+  file_url: string | null;
+  thumbnail_url: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface AccountCredential {
+  id: string;
+  client_id: string;
+  platform: string;
+  account_name: string | null;
+  username: string | null;
+  notes: string | null;
+  status: "active" | "pending" | "revoked";
+  created_at: string;
 }

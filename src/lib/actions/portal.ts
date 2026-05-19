@@ -1,0 +1,80 @@
+"use server";
+import { createClient } from "@/lib/supabase/server";
+import type { PortalClient, Deliverable, Report, Invoice, Project, BrandAsset, AccountCredential } from "@/lib/types";
+
+async function getClientId(): Promise<string | null> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  return user?.id ?? null;
+}
+
+export async function getPortalClient(): Promise<PortalClient | null> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  const { data } = await supabase.from("portal_clients").select("*").eq("id", user.id).maybeSingle();
+  return data as PortalClient | null;
+}
+
+export async function getDeliverables(): Promise<Deliverable[]> {
+  const clientId = await getClientId();
+  if (!clientId) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("deliverables").select("*").eq("client_id", clientId).order("created_at", { ascending: false });
+  return (data ?? []) as Deliverable[];
+}
+
+export async function updateDeliverableStatus(id: string, status: Deliverable["status"], changes_note?: string): Promise<void> {
+  const supabase = await createClient();
+  await supabase.from("deliverables").update({ status, changes_note: changes_note ?? null }).eq("id", id);
+}
+
+export async function getReports(): Promise<Report[]> {
+  const clientId = await getClientId();
+  if (!clientId) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("reports").select("*").eq("client_id", clientId).order("month", { ascending: false });
+  return (data ?? []) as Report[];
+}
+
+export async function getInvoices(): Promise<Invoice[]> {
+  const clientId = await getClientId();
+  if (!clientId) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("invoices").select("*").eq("client_id", clientId).order("issued_date", { ascending: false });
+  return (data ?? []) as Invoice[];
+}
+
+export async function getProjects(): Promise<Project[]> {
+  const clientId = await getClientId();
+  if (!clientId) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("projects").select("*").eq("client_id", clientId).order("sort_order", { ascending: true });
+  return (data ?? []) as Project[];
+}
+
+export async function getBrandAssets(): Promise<BrandAsset[]> {
+  const clientId = await getClientId();
+  if (!clientId) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("brand_assets").select("*").eq("client_id", clientId).order("type", { ascending: true });
+  return (data ?? []) as BrandAsset[];
+}
+
+export async function getAccountCredentials(): Promise<AccountCredential[]> {
+  const clientId = await getClientId();
+  if (!clientId) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("account_credentials").select("*").eq("client_id", clientId).order("platform", { ascending: true });
+  return (data ?? []) as AccountCredential[];
+}
+
+export async function getPortalDashboardData() {
+  const [client, deliverables, projects, invoices] = await Promise.all([
+    getPortalClient(),
+    getDeliverables(),
+    getProjects(),
+    getInvoices(),
+  ]);
+  return { client, deliverables, projects, invoices };
+}

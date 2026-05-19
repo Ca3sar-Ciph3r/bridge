@@ -12,6 +12,7 @@ import { Icon } from "@/components/ui/Icon";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { getOrCreateSession, getAllSectionData, submitOnboarding } from "@/lib/actions/session";
 import type { OnboardingSession, Competitor } from "@/lib/types";
+// Competitor used in strategyItems map below
 
 const SERVICE_LABELS: Record<string, string> = {
   web: "Website design",
@@ -63,34 +64,27 @@ function computeQualityScore(data: Awaited<ReturnType<typeof getAllSectionData>>
   const svc = data?.services;
   const strat = data?.strategy;
   const goals = data?.goals;
-  const assets = data?.assets ?? [];
-  const access = data?.access ?? [];
 
   let score = 0;
 
-  // Business profile: 25 pts
-  if (snap?.business_type) score += 5;
-  if (snap?.industry) score += 5;
-  if (snap?.headquarters) score += 5;
-  if (snap?.company_size) score += 5;
-  if (snap?.revenue_stage) score += 5;
+  // Business profile: 30 pts
+  if (snap?.business_type) score += 6;
+  if (snap?.industry) score += 6;
+  if (snap?.headquarters) score += 6;
+  if (snap?.company_size) score += 6;
+  if (snap?.revenue_stage) score += 6;
 
-  // Service scope: 20 pts
-  if ((svc?.selected_services?.length ?? 0) >= 1) score += 8;
-  if ((svc?.selected_services?.length ?? 0) >= 2) score += 4;
-  if (svc?.monthly_budget_usd) score += 8;
+  // Service scope: 25 pts
+  if ((svc?.selected_services?.length ?? 0) >= 1) score += 10;
+  if ((svc?.selected_services?.length ?? 0) >= 2) score += 5;
+  if (svc?.monthly_budget_usd) score += 10;
 
-  // Strategy quality: 25 pts
-  if ((strat?.business_description?.length ?? 0) > 50) score += 8;
-  if ((strat?.icp_demographics?.length ?? 0) > 0) score += 5;
+  // Strategy quality: 30 pts
+  if ((strat?.business_description?.length ?? 0) > 50) score += 10;
+  if ((strat?.icp_demographics?.length ?? 0) > 0) score += 6;
   if ((strat?.icp_geography?.length ?? 0) > 0) score += 4;
-  if ((strat?.competitors?.length ?? 0) > 0) score += 5;
-  if ((strat?.growth_constraints?.length ?? 0) > 0) score += 3;
-
-  // Assets: 15 pts
-  if (assets.length >= 1) score += 5;
-  if (assets.filter(a => a.validation_status === "ok").length >= 3) score += 5;
-  if (assets.filter(a => a.validation_status === "err").length === 0 && assets.length > 0) score += 5;
+  if ((strat?.competitors?.length ?? 0) > 0) score += 6;
+  if ((strat?.growth_constraints?.length ?? 0) > 0) score += 4;
 
   // Goals: 15 pts
   if ((goals?.selected_goals?.length ?? 0) >= 1) score += 5;
@@ -104,10 +98,6 @@ function computeQualityScore(data: Awaited<ReturnType<typeof getAllSectionData>>
   if (hasNumericTarget) score += 5;
   if ((goals?.priority_order?.length ?? 0) >= 1) score += 5;
 
-  // Bonus: account access
-  const connectedCount = access.filter((a: { status: string }) => a.status === "connected").length;
-  if (connectedCount >= 1) score = Math.min(score + 5, 100);
-
   return Math.min(score, 100);
 }
 
@@ -118,38 +108,28 @@ function computeSectionScores(data: Awaited<ReturnType<typeof getAllSectionData>
   const svc = data?.services;
   const strat = data?.strategy;
   const goals = data?.goals;
-  const assets = data?.assets ?? [];
-  const access = data?.access ?? [];
 
-  const snapScore = [snap?.business_type, snap?.industry, snap?.headquarters, snap?.company_size, snap?.revenue_stage].filter(Boolean).length * 5;
+  const snapScore = [snap?.business_type, snap?.industry, snap?.headquarters, snap?.company_size, snap?.revenue_stage].filter(Boolean).length * 6;
   const svcScore = Math.min(
-    ((svc?.selected_services?.length ?? 0) >= 1 ? 8 : 0) +
-    ((svc?.selected_services?.length ?? 0) >= 2 ? 4 : 0) +
-    (svc?.monthly_budget_usd ? 8 : 0), 20);
+    ((svc?.selected_services?.length ?? 0) >= 1 ? 10 : 0) +
+    ((svc?.selected_services?.length ?? 0) >= 2 ? 5 : 0) +
+    (svc?.monthly_budget_usd ? 10 : 0), 25);
   const stratScore = Math.min(
-    ((strat?.business_description?.length ?? 0) > 50 ? 8 : 0) +
-    ((strat?.icp_demographics?.length ?? 0) > 0 ? 5 : 0) +
+    ((strat?.business_description?.length ?? 0) > 50 ? 10 : 0) +
+    ((strat?.icp_demographics?.length ?? 0) > 0 ? 6 : 0) +
     ((strat?.icp_geography?.length ?? 0) > 0 ? 4 : 0) +
-    ((strat?.competitors?.length ?? 0) > 0 ? 5 : 0) +
-    ((strat?.growth_constraints?.length ?? 0) > 0 ? 3 : 0), 25);
-  const assetScore = Math.min(
-    (assets.length >= 1 ? 5 : 0) +
-    (assets.filter(a => a.validation_status === "ok").length >= 3 ? 5 : 0) +
-    (assets.filter(a => a.validation_status === "err").length === 0 && assets.length > 0 ? 5 : 0), 15);
-  const connectedCount = access.filter((a: { status: string }) => a.status === "connected").length;
-  const accessScore = Math.min(connectedCount * 3, 10);
+    ((strat?.competitors?.length ?? 0) > 0 ? 6 : 0) +
+    ((strat?.growth_constraints?.length ?? 0) > 0 ? 4 : 0), 30);
   const goalScore = Math.min(
     ((goals?.selected_goals?.length ?? 0) >= 1 ? 5 : 0) +
     (goals?.new_patients_per_month != null || goals?.annual_revenue_usd != null ? 5 : 0) +
     ((goals?.priority_order?.length ?? 0) >= 1 ? 5 : 0), 15);
 
   return [
-    { label: "Snapshot",       score: snapScore,   max: 25, tone: snapScore >= 20 ? "ok" : "warn" },
-    { label: "Services",       score: svcScore,    max: 20, tone: svcScore >= 12 ? "ok" : "warn" },
-    { label: "Strategy",       score: stratScore,  max: 25, tone: stratScore >= 18 ? "ok" : "warn" },
-    { label: "Assets",         score: assetScore,  max: 15, tone: assetScore >= 10 ? "ok" : "warn" },
-    { label: "Account Access", score: accessScore, max: 10, tone: accessScore >= 6 ? "ok" : "warn" },
-    { label: "Goals",          score: goalScore,   max: 15, tone: goalScore >= 10 ? "ok" : "warn" },
+    { label: "Snapshot",  score: snapScore,  max: 30, tone: snapScore >= 24 ? "ok" : "warn" },
+    { label: "Services",  score: svcScore,   max: 25, tone: svcScore >= 15 ? "ok" : "warn" },
+    { label: "Strategy",  score: stratScore, max: 30, tone: stratScore >= 20 ? "ok" : "warn" },
+    { label: "Goals",     score: goalScore,  max: 15, tone: goalScore >= 10 ? "ok" : "warn" },
   ];
 }
 
@@ -192,8 +172,6 @@ export default function ReviewPage() {
   const svc = allData?.services;
   const strat = allData?.strategy;
   const goals = allData?.goals;
-  const assets = allData?.assets ?? [];
-  const access = allData?.access ?? [];
 
   const qualityScore = allData ? computeQualityScore(allData) : 0;
   const sectionScores = allData ? computeSectionScores(allData) : [];
@@ -202,9 +180,7 @@ export default function ReviewPage() {
   const goalNames = (goals?.selected_goals ?? []).map((id: string) => GOAL_LABELS[id] ?? id).join(", ");
   const topGoalId = goals?.priority_order?.[0];
   const topGoalLabel = topGoalId ? (GOAL_LABELS[topGoalId] ?? topGoalId) : "";
-
   const nt = goals?.numeric_targets ?? {};
-  const connectedPlatforms = access.filter((a: { status: string }) => a.status === "connected").map((a: { platform_name: string }) => a.platform_name);
 
   const snapshotItems: [string, string][] = [
     ["Type",     snap?.business_type ?? ""],
@@ -227,16 +203,6 @@ export default function ReviewPage() {
     ["Geography",   (strat?.icp_geography ?? []).join(", ")],
     ["Competitors", (strat?.competitors ?? []).map((c: Competitor) => c.name).join(", ")],
     ["Constraints", (strat?.growth_constraints ?? []).slice(0, 2).join(", ")],
-  ];
-
-  const assetsItems: [string, string][] = [
-    ["Uploaded",  `${assets.length} file${assets.length !== 1 ? "s" : ""}`],
-    ["Validated", `${assets.filter(a => a.validation_status === "ok").length} of ${assets.length}`],
-  ];
-
-  const accessItems: [string, string][] = [
-    ["Connected",    connectedPlatforms.length > 0 ? connectedPlatforms.join(", ") : "None yet"],
-    ["In progress",  String(access.filter((a: { status: string }) => a.status === "steps_sent").length)],
   ];
 
   const revenueZAR = goals?.annual_revenue_usd ? `R${(goals.annual_revenue_usd / 1_000_000).toFixed(1)}M` : "";
@@ -297,9 +263,7 @@ export default function ReviewPage() {
                 <ReviewSection title="Business Snapshot" section="A" items={snapshotItems} editPath="/onboarding/snapshot" />
                 <ReviewSection title="Services" section="B" items={servicesItems} editPath="/onboarding/services" />
                 <ReviewSection title="Strategy & ICP" section="C" items={strategyItems} warn={!strat?.business_description ? 1 : undefined} editPath="/onboarding/strategy" />
-                <ReviewSection title="Assets" section="D" items={assetsItems} editPath="/onboarding/assets" />
-                <ReviewSection title="Account Access" section="E" items={accessItems} editPath="/onboarding/access" />
-                <ReviewSection title="Goals" section="F" items={goalsItems} editPath="/onboarding/goals" />
+                <ReviewSection title="Goals" section="D" items={goalsItems} editPath="/onboarding/goals" />
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>

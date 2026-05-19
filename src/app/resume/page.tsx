@@ -16,15 +16,26 @@ export default async function ResumePage() {
   const session = await getOrCreateSession();
   if (!session) redirect("/");
 
+  // Submitted clients go straight to the portal
+  if (session.status === "submitted") redirect("/portal/dashboard");
+
   const allData = await getAllSectionData(session.id);
-  const currentIdx = NAV_SECTIONS.findIndex(s => s.id === session.current_section) ?? 0;
+
+  // Guard against stale section IDs (assets/access removed from flow)
+  const validSections = NAV_SECTIONS.map(s => s.id);
+  const rawSection = session.current_section as string;
+  const resolvedSection = validSections.includes(rawSection as typeof validSections[number])
+    ? (rawSection as typeof validSections[number])
+    : "goals";
+
+  const currentIdx = NAV_SECTIONS.findIndex(s => s.id === resolvedSection) ?? 0;
   const isNew = currentIdx === 0 && !allData.snapshot;
 
   if (isNew) redirect("/onboarding/snapshot");
 
   const sections = NAV_SECTIONS.map((s, i) => ({
     ...s,
-    state: i < currentIdx ? "done" : i === currentIdx ? "active" : "todo",
+    state: i < currentIdx ? "done" : i === currentIdx ? "active" : "todo" as const,
   }));
 
   const firstName = session.client_name?.split(" ")[0] ?? user.email?.split("@")[0] ?? "there";
