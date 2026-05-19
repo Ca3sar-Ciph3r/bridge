@@ -6,9 +6,10 @@ import { PortalNav } from "@/components/portal/PortalNav";
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/");
+  if (!user) redirect("/login");
 
   const client = await getPortalClient();
+  if (!client || client.retainer_status !== "active") redirect("/login");
 
   return (
     <div style={{ display: "flex", minHeight: "100dvh", background: "var(--bg)" }}>

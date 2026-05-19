@@ -10,7 +10,7 @@ export function PortalUrlBox({ email }: { email: string | null }) {
     setOrigin(window.location.origin);
   }, []);
 
-  const url = origin || "…";
+  const url = origin ? `${origin}/login` : "…";
 
   function copy() {
     navigator.clipboard.writeText(url);
@@ -47,8 +47,8 @@ export function PortalUrlBox({ email }: { email: string | null }) {
       </div>
 
       <div style={{ fontSize: 12, color: "var(--ok-ink)", lineHeight: 1.5 }}>
-        The client goes to this URL and signs in with{" "}
-        <strong>{email ?? "their email"}</strong> — they&apos;ll land straight on their portal.
+        Send this to <strong>{email ?? "the client"}</strong>. They create an account using
+        their email address, then sign in to access their portal.
       </div>
     </div>
   );

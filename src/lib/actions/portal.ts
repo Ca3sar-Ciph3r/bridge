@@ -1,18 +1,23 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { PortalClient, Deliverable, Report, Invoice, Project, BrandAsset, AccountCredential } from "@/lib/types";
 
 async function getClientId(): Promise<string | null> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  return user?.id ?? null;
+  if (!user?.email) return null;
+  const admin = createAdminClient();
+  const { data } = await admin.from("portal_clients").select("id").eq("email", user.email).maybeSingle();
+  return data?.id ?? null;
 }
 
 export async function getPortalClient(): Promise<PortalClient | null> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data } = await supabase.from("portal_clients").select("*").eq("id", user.id).maybeSingle();
+  if (!user?.email) return null;
+  const admin = createAdminClient();
+  const { data } = await admin.from("portal_clients").select("*").eq("email", user.email).maybeSingle();
   return data as PortalClient | null;
 }
 
