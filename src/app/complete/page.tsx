@@ -3,7 +3,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getLatestSession } from "@/lib/actions/session";
 import { Icon } from "@/components/ui/Icon";
-import { Button } from "@/components/ui/Button";
 
 export default async function CompletePage() {
   const supabase = await createClient();
@@ -48,23 +47,35 @@ export default async function CompletePage() {
             business, and be in touch with you shortly.
           </p>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 28 }}>
-            {[
-              ["Quality score", `${session.quality_score ?? 94} / 100`],
-              ["Status",        "Submitted"],
-              ["Account manager", "Luke Gunn"],
-              ["Next step",     "Luke will be in touch"],
-            ].map(([k, v]) => (
-              <div key={k} style={{ padding: 14, background: "var(--surface)", border: "1px solid var(--line)", borderRadius: 10 }}>
-                <div className="br-eyebrow" style={{ fontSize: 10 }}>{k}</div>
-                <div style={{ fontSize: 14, fontWeight: 600, letterSpacing: "-0.01em", marginTop: 4, lineHeight: 1.3 }}>{v}</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 0 }}>
+            {([
+              { done: true,  icon: "check",      label: "Submission received",   desc: "Everything you've filled in has been sent directly to Luke Gunn." },
+              { done: false, icon: "file",        label: "Proposal on its way",   desc: "Luke will review your information and send you a tailored proposal within 1–2 business days." },
+              { done: false, icon: "sparkle",     label: "You review & approve",  desc: "Once you're happy with the proposal, you sign off and we get started." },
+              { done: false, icon: "arrow_right", label: "Your client portal opens", desc: "You'll get a personal portal to track progress, reports, deliverables, and invoices." },
+            ] as const).map(({ done, icon, label, desc }) => (
+              <div key={label} style={{
+                display: "flex", alignItems: "flex-start", gap: 12,
+                padding: "12px 14px", borderRadius: 10,
+                background: done ? "var(--ok-soft)" : "var(--surface)",
+                border: `1px solid ${done ? "var(--ok)" : "var(--line)"}`,
+                opacity: done ? 1 : 0.65,
+              }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: 7, flexShrink: 0,
+                  background: done ? "var(--ok)" : "var(--surface-2)",
+                  border: `1px solid ${done ? "var(--ok)" : "var(--line)"}`,
+                  display: "grid", placeItems: "center",
+                  color: done ? "#fff" : "var(--ink-4)",
+                }}>
+                  <Icon name={icon} size={13} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 13.5, fontWeight: 600, color: done ? "var(--ok-ink)" : "var(--ink-2)", lineHeight: 1.2 }}>{label}</div>
+                  <div style={{ fontSize: 12.5, color: "var(--ink-4)", marginTop: 3, lineHeight: 1.45 }}>{desc}</div>
+                </div>
               </div>
             ))}
-          </div>
-
-          <div style={{ display: "flex", gap: 10 }}>
-            <Button variant="primary" size="md" iconRight="arrow_right">Enter Client Portal</Button>
-            <Button variant="outline" size="md" icon="file">Download summary</Button>
           </div>
         </div>
       </div>

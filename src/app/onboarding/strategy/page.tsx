@@ -100,9 +100,9 @@ const ICP_SECTIONS: {
     fields: [
       {
         key: "icp_triggers",
-        label: "What prompts them to buy",
+        label: "What usually gets them off the fence",
         hint: "Select all that apply",
-        options: ["New home purchase", "New baby", "Business launch", "Job change", "Relocation", "Marriage / Divorce", "Seasonal / Holiday", "Health concern", "Financial milestone"],
+        options: ["Frustrated with their current provider", "First time needing this kind of help", "Recommended by someone they trust", "Found you on Google or social media", "Their business hit a new milestone", "A life event (home, baby, job change)", "Seasonal or time-of-year pressure", "Looking for better value or lower cost", "Something broke or became urgent", "Planning ahead — no rush, just researching"],
       },
     ],
   },

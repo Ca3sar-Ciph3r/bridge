@@ -23,10 +23,10 @@ const BUSINESS_TYPES = [
 const COMPANY_SIZES = ["1–5", "6–15", "16–50", "51–150", "150+"];
 
 const REVENUE_STAGES = [
-  { label: "Pre-revenue", subtitle: "R0" },
-  { label: "Early", subtitle: "<R10M" },
-  { label: "Established", subtitle: "R10M–R100M" },
-  { label: "Scaling", subtitle: "R100M+" },
+  { label: "Pre-revenue", subtitle: "Not yet trading" },
+  { label: "Early",       subtitle: "Under R500K/yr" },
+  { label: "Growing",     subtitle: "R500K–R2M/yr" },
+  { label: "Established", subtitle: "R2M–R5M/yr" },
 ];
 
 const PRIMARY_GOALS = [

@@ -196,7 +196,7 @@ export async function submitOnboarding(sessionId: string, qualityScore: number) 
         name: sess?.client_name ?? user.user_metadata?.full_name ?? null,
         company_name: sess?.client_company ?? null,
         email: sess?.client_email ?? user.email ?? null,
-        retainer_status: "active",
+        retainer_status: "paused",
         start_date: new Date().toISOString().slice(0, 10),
       },
       { onConflict: "id", ignoreDuplicates: true }

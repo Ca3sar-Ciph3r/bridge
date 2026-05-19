@@ -13,14 +13,14 @@ import { getOrCreateSession, getGoals, saveGoals, updateSessionSection } from "@
 import type { OnboardingSession } from "@/lib/types";
 
 const GOAL_OPTIONS = [
-  { id: "new_clients",   icon: "users",     title: "New clients",       subtitle: "Booked first appointment" },
-  { id: "revenue",       icon: "target",    title: "Revenue",           subtitle: "Total business revenue" },
-  { id: "roas",          icon: "bolt",      title: "ROAS",              subtitle: "Return on ad spend" },
-  { id: "reviews",       icon: "star",      title: "Reviews",           subtitle: "Google ★ average" },
-  { id: "local_rank",    icon: "search",    title: "Local rank",        subtitle: "Avg. pack position" },
-  { id: "reach",         icon: "megaphone", title: "Reach",             subtitle: "Monthly impressions" },
-  { id: "location_fill", icon: "building",  title: "Location fill",     subtitle: "Schedule utilization" },
-  { id: "retention",     icon: "users",     title: "Retention",         subtitle: "Repeat client rate" },
+  { id: "new_clients",   icon: "users",     title: "New clients",      subtitle: "More new paying customers through the door" },
+  { id: "revenue",       icon: "target",    title: "Revenue",          subtitle: "Grow the total money the business brings in" },
+  { id: "roas",          icon: "bolt",      title: "Ad return",        subtitle: "Get more back for every rand spent on advertising" },
+  { id: "reviews",       icon: "star",      title: "Google reviews",   subtitle: "More 5-star reviews and a higher rating online" },
+  { id: "local_rank",    icon: "search",    title: "Google ranking",   subtitle: "Appear when people search for your type of business nearby" },
+  { id: "reach",         icon: "megaphone", title: "Brand awareness",  subtitle: "More people seeing and recognising your brand" },
+  { id: "location_fill", icon: "building",  title: "Keep diary full",  subtitle: "Fill up your bookings, appointments or schedule" },
+  { id: "retention",     icon: "users",     title: "Repeat customers", subtitle: "Get existing clients to come back more often" },
 ] as const;
 
 export default function GoalsPage() {

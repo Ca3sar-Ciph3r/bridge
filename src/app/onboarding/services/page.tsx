@@ -24,7 +24,8 @@ const SERVICES = [
 
 const AD_PLATFORMS = ["Meta", "Google", "TikTok", "LinkedIn", "YouTube"];
 const WEB_PLATFORMS = ["Webflow", "WordPress", "Squarespace", "Wix", "Shopify", "Custom"];
-const WEB_ISSUES = ["Looks dated", "Slow on mobile", "Bad booking flow", "Hard to update", "Poor SEO", "No analytics"];
+const WEB_ISSUES = ["Looks outdated", "Slow on mobile", "Hard to find on Google", "Bad booking or contact form", "Hard to update myself", "No way to track visitors"];
+const WEB_GOALS = ["Generate leads & enquiries", "Online booking system", "Show my work / portfolio", "Sell products online", "Share news & blog posts", "Look professional & trustworthy", "Mobile-friendly experience"];
 
 function BranchPanel({ icon, title, complete, children }: {
   icon: string; title: string; complete?: boolean; children: React.ReactNode;
@@ -223,35 +224,50 @@ export default function ServicesPage() {
                       </div>
                     </Field>
                     {hasWebsite === "Yes" && (
-                      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 16, marginTop: 14 }}>
-                        <Field label="Current URL">
-                          <Input value={websiteUrl} onChange={setWebsiteUrl} onBlur={() => autosave({ website_url: websiteUrl || null })} placeholder="yoursite.com" prefix={<Icon name="globe" size={14} />} />
-                        </Field>
-                        <Field label="Platform">
+                      <>
+                        <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 16, marginTop: 14 }}>
+                          <Field label="Current URL">
+                            <Input value={websiteUrl} onChange={setWebsiteUrl} onBlur={() => autosave({ website_url: websiteUrl || null })} placeholder="yoursite.com" prefix={<Icon name="globe" size={14} />} />
+                          </Field>
+                          <Field label="Built on which platform?">
+                            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                              {WEB_PLATFORMS.map(p => (
+                                <Chip key={p} size="sm" active={websitePlatform === p} onClick={() => {
+                                  setWebsitePlatform(p);
+                                  autosave({ website_platform: p });
+                                }}>{p}</Chip>
+                              ))}
+                            </div>
+                          </Field>
+                        </div>
+                        <Field label="What needs improving?" hint="Pick all that apply — even if you're not sure, just go with your gut" style={{ marginTop: 14 }}>
                           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                            {WEB_PLATFORMS.map(p => (
-                              <Chip key={p} size="sm" active={websitePlatform === p} onClick={() => {
-                                setWebsitePlatform(p);
-                                autosave({ website_platform: p });
-                              }}>{p}</Chip>
+                            {WEB_ISSUES.map(issue => (
+                              <Chip key={issue} size="sm" active={websiteIssues.includes(issue)} onClick={() => toggleIssue(issue)}>{issue}</Chip>
                             ))}
                           </div>
                         </Field>
-                      </div>
+                      </>
                     )}
-                    <Field label="What's broken on it today?" hint="Pick all that apply" style={{ marginTop: 14 }}>
-                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                        {WEB_ISSUES.map(issue => (
-                          <Chip key={issue} size="sm" active={websiteIssues.includes(issue)} onClick={() => toggleIssue(issue)}>{issue}</Chip>
-                        ))}
-                      </div>
-                    </Field>
+                    {(hasWebsite === "No" || hasWebsite === "In progress") && (
+                      <Field
+                        label={hasWebsite === "No" ? "What would you like your new website to do for you?" : "What's most important to get right on the new site?"}
+                        hint="Pick all that apply"
+                        style={{ marginTop: 14 }}
+                      >
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          {WEB_GOALS.map(goal => (
+                            <Chip key={goal} size="sm" active={websiteIssues.includes(goal)} onClick={() => toggleIssue(goal)}>{goal}</Chip>
+                          ))}
+                        </div>
+                      </Field>
+                    )}
                   </BranchPanel>
                 )}
 
                 {hasAds && (
                   <BranchPanel icon="megaphone" title="Paid ads" complete={adPlatforms.length > 0}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                       <Field label="Platforms">
                         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                           {AD_PLATFORMS.map(p => (
@@ -262,11 +278,27 @@ export default function ServicesPage() {
                       <Field label="Monthly budget (ZAR)">
                         <Input value={monthlyBudget} onChange={setMonthlyBudget} onBlur={() => autosave({ monthly_budget_usd: monthlyBudget ? Number(monthlyBudget.replace(/[^0-9.]/g, "")) : null })} placeholder="15,000" prefix="R" suffix="/ mo" />
                       </Field>
-                      <Field label="Tracking installed">
-                        <div style={{ display: "flex", gap: 6 }}>
-                          <Chip size="sm" active={trackingGa4} onClick={() => { setTrackingGa4(!trackingGa4); autosave({ tracking_ga4: !trackingGa4 }); }}>GA4</Chip>
-                          <Chip size="sm" active={trackingGtm} onClick={() => { setTrackingGtm(!trackingGtm); autosave({ tracking_gtm: !trackingGtm }); }}>GTM</Chip>
-                          <Chip size="sm" active={trackingPixel} onClick={() => { setTrackingPixel(!trackingPixel); autosave({ tracking_pixel: !trackingPixel }); }}>Pixel</Chip>
+                      <Field label="Is any of this already on your website?" hint="Not sure? Leave it blank — we'll check after onboarding">
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          {([
+                            { state: trackingGa4,   setter: setTrackingGa4,   field: "tracking_ga4",   label: "Google Analytics",            desc: "Shows who visits your site, what they look at, and where they come from" },
+                            { state: trackingGtm,   setter: setTrackingGtm,   field: "tracking_gtm",   label: "Google Tag Manager",          desc: "A tool that manages all your tracking in one place — most businesses don't know if they have it" },
+                            { state: trackingPixel, setter: setTrackingPixel, field: "tracking_pixel", label: "Facebook / Instagram Pixel",   desc: "Lets Facebook and Instagram track what happens on your site after someone clicks your ad" },
+                          ] as const).map(({ state, setter, field, label, desc }) => (
+                            <label key={field} onClick={() => { const next = !state; setter(next); autosave({ [field]: next }); }} style={{
+                              display: "flex", alignItems: "flex-start", gap: 10, padding: "9px 11px", borderRadius: 8, cursor: "pointer",
+                              background: state ? "var(--accent-soft)" : "var(--surface-2)",
+                              border: `1px solid ${state ? "var(--accent-soft-2)" : "var(--line)"}`,
+                            }}>
+                              <div style={{ width: 15, height: 15, borderRadius: 4, flexShrink: 0, marginTop: 2, background: state ? "var(--accent)" : "var(--surface)", border: state ? "1px solid var(--accent)" : "1.5px solid var(--line-strong)", display: "grid", placeItems: "center", color: "#fff" }}>
+                                {state && <Icon name="check" size={9} strokeWidth={3} />}
+                              </div>
+                              <div>
+                                <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink-2)", lineHeight: 1.2 }}>{label}</div>
+                                <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 2 }}>{desc}</div>
+                              </div>
+                            </label>
+                          ))}
                         </div>
                       </Field>
                     </div>
