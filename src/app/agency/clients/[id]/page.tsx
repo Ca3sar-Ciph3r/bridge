@@ -4,6 +4,7 @@ import { getAgencyClient } from "@/lib/actions/agency";
 import { Icon } from "@/components/ui/Icon";
 import { Pill } from "@/components/ui/Chip";
 import { ClientEditor } from "./ClientEditor";
+import { PortalUrlBox } from "./PortalUrlBox";
 
 function formatDate(d: string | null) {
   if (!d) return "—";
@@ -63,16 +64,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
 
       {/* Portal link */}
       {client.retainer_status === "active" && (
-        <div style={{ marginTop: 20, padding: "14px 16px", background: "var(--ok-soft)", border: "1px solid var(--ok)", borderRadius: 12 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ok-ink)", marginBottom: 4 }}>Portal URL to share with client</div>
-          <div className="br-mono" style={{ fontSize: 12.5, color: "var(--ink-2)" }}>
-            {process.env.NEXT_PUBLIC_SUPABASE_URL?.replace("https://pchnmikhxwrgexhzwolf.supabase.co", "") || ""}
-            /portal/dashboard
-          </div>
-          <div style={{ fontSize: 12, color: "var(--ink-4)", marginTop: 4 }}>
-            They sign in at the home page — the portal loads automatically once authenticated.
-          </div>
-        </div>
+        <PortalUrlBox email={client.email} />
       )}
     </div>
   );
