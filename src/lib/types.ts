@@ -180,8 +180,8 @@ export interface Report {
 export interface Invoice {
   id: string;
   client_id: string;
-  invoice_number: string;
-  amount: number;
+  invoice_number: string | null;
+  amount: number | null;
   currency: string;
   status: "pending" | "paid" | "overdue" | "draft";
   due_date: string | null;

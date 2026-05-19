@@ -188,8 +188,8 @@ export async function getClientInvoices(clientId: string): Promise<Invoice[]> {
 export async function addInvoice(
   clientId: string,
   payload: {
-    invoice_number: string;
-    amount: number;
+    invoice_number: string | null;
+    amount: number | null;
     description: string | null;
     issued_date: string | null;
     due_date: string | null;
