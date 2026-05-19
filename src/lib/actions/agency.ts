@@ -43,16 +43,26 @@ export async function setAgencyStatus(sessionId: string, agencyStatus: AgencySta
   if (agencyStatus === "won") {
     const { data: session } = await supabase
       .from("onboarding_sessions")
-      .select("user_id")
+      .select("user_id, client_name, client_email, client_company")
       .eq("id", sessionId)
       .single();
 
     if (session?.user_id) {
-      await supabase
-        .from("portal_clients")
-        .update({ retainer_status: "active" })
-        .eq("id", session.user_id);
+      // Upsert so the record is created even if submitOnboarding never ran
+      await supabase.from("portal_clients").upsert(
+        {
+          id: session.user_id,
+          name: session.client_name ?? null,
+          company_name: session.client_company ?? null,
+          email: session.client_email ?? null,
+          retainer_status: "active",
+          start_date: new Date().toISOString().slice(0, 10),
+        },
+        { onConflict: "id", ignoreDuplicates: false }
+      );
     }
+
+    revalidatePath("/agency/clients");
   }
 
   revalidatePath("/agency/submissions");

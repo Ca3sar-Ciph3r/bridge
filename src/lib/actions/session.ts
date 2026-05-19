@@ -1,5 +1,6 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { type SectionId, type SnapshotData, type ServicesData, type StrategyData, type GoalsData } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 
@@ -190,7 +191,8 @@ export async function submitOnboarding(sessionId: string, qualityScore: number) 
 
   if (user && !updateResult.error) {
     const sess = sessionResult.data;
-    await supabase.from("portal_clients").upsert(
+    const admin = createAdminClient();
+    await admin.from("portal_clients").upsert(
       {
         id: user.id,
         name: sess?.client_name ?? user.user_metadata?.full_name ?? null,
