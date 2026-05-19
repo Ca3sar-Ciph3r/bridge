@@ -8,28 +8,22 @@ import { Pill } from "@/components/ui/Chip";
 import { Icon } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/client";
 
-type AuthTab = "magic" | "password";
-type PasswordMode = "signin" | "signup";
+type View = "magic" | "signin" | "signup" | "done";
 
 export function LandingClient() {
   const router = useRouter();
 
-  // Shared
-  const [tab, setTab] = useState<AuthTab>("magic");
+  const [view, setView] = useState<View>("magic");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [done, setDone] = useState(false);
 
-  // Password-specific
-  const [passwordMode, setPasswordMode] = useState<PasswordMode>("signin");
+  // Password fields
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  function resetState() {
-    setError(""); setDone(false);
-  }
+  function reset() { setError(""); }
 
   async function handleMagicLink() {
     if (!email.includes("@")) { setError("Please enter a valid email address."); return; }
@@ -44,28 +38,15 @@ export function LandingClient() {
     router.push(`/magic-link?email=${encodeURIComponent(email)}`);
   }
 
-  async function handlePassword() {
+  async function handleSignIn() {
     if (!email.includes("@")) { setError("Please enter a valid email address."); return; }
-    if (password.length < 8) { setError("Password must be at least 8 characters."); return; }
-    if (passwordMode === "signup" && !name.trim()) { setError("Please enter your name."); return; }
+    if (password.length < 6) { setError("Please enter your password."); return; }
     setLoading(true); setError("");
     const supabase = createClient();
-
-    if (passwordMode === "signin") {
-      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
-      setLoading(false);
-      if (authError) { setError("Incorrect email or password."); return; }
-      router.push("/resume");
-    } else {
-      const { error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { full_name: name.trim() }, emailRedirectTo: `${location.origin}/auth/callback` },
-      });
-      setLoading(false);
-      if (authError) { setError(authError.message); return; }
-      setDone(true);
-    }
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (authError) { setError("Incorrect email or password."); return; }
+    router.push("/resume");
   }
 
   return (
@@ -132,34 +113,16 @@ export function LandingClient() {
         {/* Right — auth card */}
         <div style={{ padding: "0 56px 40px", display: "flex", alignItems: "center" }}>
           <div style={{ width: "100%", background: "var(--surface)", border: "1px solid var(--line)", borderRadius: 16, boxShadow: "var(--shadow-3)", overflow: "hidden" }}>
-
-            {/* Tabs */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderBottom: "1px solid var(--line)" }}>
-              {([["magic", "Magic link"], ["password", "Email & password"]] as [AuthTab, string][]).map(([t, label]) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => { setTab(t); resetState(); }}
-                  style={{
-                    padding: "14px 16px", border: "none", cursor: "pointer", fontFamily: "var(--font-sans)",
-                    fontSize: 13, fontWeight: tab === t ? 600 : 500,
-                    background: tab === t ? "var(--surface)" : "var(--surface-2)",
-                    color: tab === t ? "var(--ink)" : "var(--ink-4)",
-                    borderBottom: tab === t ? "2px solid var(--ink)" : "2px solid transparent",
-                  }}
-                >{label}</button>
-              ))}
-            </div>
-
             <div style={{ padding: 28 }}>
-              {/* ── Magic link tab ── */}
-              {tab === "magic" && (
+
+              {/* ── Magic link (default) ── */}
+              {view === "magic" && (
                 <>
                   <div style={{ marginBottom: 20 }}>
                     <Pill tone="ok" size="sm" icon="check">Invitation verified</Pill>
-                    <h2 style={{ marginTop: 12, fontSize: 22, fontWeight: 600, letterSpacing: "-0.02em", lineHeight: 1.15, fontFamily: "var(--font-sans)" }}>Sign in to continue</h2>
+                    <h2 style={{ marginTop: 12, fontSize: 22, fontWeight: 600, letterSpacing: "-0.02em", lineHeight: 1.15, fontFamily: "var(--font-sans)" }}>Get started</h2>
                     <p style={{ marginTop: 6, marginBottom: 0, fontSize: 14, lineHeight: 1.55, color: "var(--ink-3)" }}>
-                      We&apos;ll send a secure link to your inbox. Click it and you&apos;re in — no password required.
+                      Enter your email and we&apos;ll send a secure link — no password needed.
                     </p>
                   </div>
                   <Field label="Work email" error={error}>
@@ -173,37 +136,59 @@ export function LandingClient() {
                   <div style={{ marginTop: 14, fontSize: 11.5, color: "var(--ink-4)", display: "flex", alignItems: "center", gap: 6, justifyContent: "center" }}>
                     <Icon name="lock" size={12}/> 256-bit TLS · session expires in 7 days
                   </div>
+
+                  <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px dashed var(--line)", textAlign: "center" }}>
+                    <button
+                      type="button"
+                      onClick={() => { setView("signin"); reset(); }}
+                      style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-4)", fontSize: 12.5, fontFamily: "var(--font-sans)" }}
+                    >
+                      Already have an account?{" "}
+                      <span style={{ color: "var(--accent)", fontWeight: 500 }}>Sign in with password →</span>
+                    </button>
+                  </div>
+
+                  <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px dashed var(--line)" }}>
+                    <div className="br-eyebrow" style={{ fontSize: 10 }}>What we&apos;ll cover</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
+                      {([
+                        ["Snapshot", "Industry & scale"],
+                        ["Services", "What we're scoping"],
+                        ["Strategy", "ICP & competitors"],
+                        ["Goals",    "Targets & ranks"],
+                        ["Review",   "Confirm & submit"],
+                      ] as const).map(([t, d], i) => (
+                        <div key={t} style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                          <span className="br-mono" style={{ fontSize: 10, color: "var(--ink-5)", fontVariantNumeric: "tabular-nums" }}>0{i + 1}</span>
+                          <div>
+                            <div style={{ fontSize: 12, fontWeight: 500, color: "var(--ink-2)" }}>{t}</div>
+                            <div style={{ fontSize: 11, color: "var(--ink-4)" }}>{d}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </>
               )}
 
-              {/* ── Email & password tab ── */}
-              {tab === "password" && !done && (
+              {/* ── Sign in with password ── */}
+              {view === "signin" && (
                 <>
                   <div style={{ marginBottom: 20 }}>
-                    <h2 style={{ margin: "0 0 6px 0", fontSize: 22, fontWeight: 600, letterSpacing: "-0.02em", lineHeight: 1.15, fontFamily: "var(--font-sans)" }}>
-                      {passwordMode === "signin" ? "Sign in" : "Create account"}
-                    </h2>
+                    <h2 style={{ margin: "0 0 6px 0", fontSize: 22, fontWeight: 600, letterSpacing: "-0.02em", lineHeight: 1.15, fontFamily: "var(--font-sans)" }}>Sign in</h2>
                     <p style={{ margin: 0, fontSize: 14, lineHeight: 1.55, color: "var(--ink-3)" }}>
-                      {passwordMode === "signin"
-                        ? "Sign in to your Bridge account or client portal."
-                        : "Create an account to start your onboarding session."}
+                      Sign in to your Bridge account or client portal.
                     </p>
                   </div>
-
                   <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                    {passwordMode === "signup" && (
-                      <Field label="Your name">
-                        <Input value={name} onChange={setName} placeholder="Jane Smith" prefix={<Icon name="users" size={15}/>} />
-                      </Field>
-                    )}
                     <Field label="Email address" error={error}>
                       <Input value={email} onChange={setEmail} placeholder="you@company.com" type="email" prefix={<Icon name="mail" size={15}/>} error={!!error} />
                     </Field>
-                    <Field label="Password" error={passwordMode === "signup" && password.length > 0 && password.length < 8 ? "At least 8 characters" : undefined}>
+                    <Field label="Password">
                       <Input
                         value={password}
                         onChange={setPassword}
-                        placeholder={passwordMode === "signup" ? "Min. 8 characters" : "Your password"}
+                        placeholder="Your password"
                         type={showPassword ? "text" : "password"}
                         prefix={<Icon name="lock" size={15}/>}
                         suffix={
@@ -214,70 +199,33 @@ export function LandingClient() {
                       />
                     </Field>
                   </div>
-
                   {error && <p style={{ margin: "10px 0 0", fontSize: 13, color: "var(--err)" }}>{error}</p>}
-
                   <div style={{ marginTop: 18 }}>
-                    <Button variant="accent" full size="lg" iconRight="arrow_right" onClick={handlePassword} loading={loading}>
-                      {passwordMode === "signin" ? "Sign in" : "Create account"}
+                    <Button variant="accent" full size="lg" iconRight="arrow_right" onClick={handleSignIn} loading={loading}>
+                      Sign in
                     </Button>
                   </div>
-
                   <div style={{ marginTop: 16, textAlign: "center", fontSize: 13, color: "var(--ink-4)" }}>
-                    {passwordMode === "signin" ? (
-                      <>No account?{" "}
-                        <button type="button" onClick={() => { setPasswordMode("signup"); resetState(); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--accent)", fontWeight: 500, fontSize: 13, padding: 0, fontFamily: "var(--font-sans)" }}>
-                          Create one
-                        </button>
-                      </>
-                    ) : (
-                      <>Already have an account?{" "}
-                        <button type="button" onClick={() => { setPasswordMode("signin"); resetState(); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--accent)", fontWeight: 500, fontSize: 13, padding: 0, fontFamily: "var(--font-sans)" }}>
-                          Sign in
-                        </button>
-                      </>
-                    )}
+                    <button type="button" onClick={() => { setView("magic"); reset(); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--accent)", fontWeight: 500, fontSize: 13, padding: 0, fontFamily: "var(--font-sans)" }}>
+                      ← Use magic link instead
+                    </button>
                   </div>
                 </>
               )}
 
-              {/* ── Sign-up confirmation ── */}
-              {tab === "password" && done && (
+              {/* ── Confirmation after signup ── */}
+              {view === "done" && (
                 <div style={{ textAlign: "center", padding: "16px 0" }}>
                   <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--ok-soft)", display: "grid", placeItems: "center", margin: "0 auto 16px" }}>
                     <Icon name="mail" size={22} color="var(--ok)"/>
                   </div>
                   <h2 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 600, letterSpacing: "-0.02em" }}>Check your inbox</h2>
                   <p style={{ margin: 0, fontSize: 14, color: "var(--ink-3)", lineHeight: 1.6 }}>
-                    We sent a confirmation link to <strong style={{ color: "var(--ink-2)" }}>{email}</strong>. Click it to activate your account and begin.
+                    We sent a confirmation link to <strong style={{ color: "var(--ink-2)" }}>{email}</strong>. Click it to activate your account.
                   </p>
-                  <button type="button" onClick={() => { setDone(false); setPasswordMode("signin"); }} style={{ marginTop: 20, background: "none", border: "none", cursor: "pointer", color: "var(--accent)", fontSize: 13, fontWeight: 500, fontFamily: "var(--font-sans)" }}>
+                  <button type="button" onClick={() => { setView("signin"); reset(); }} style={{ marginTop: 20, background: "none", border: "none", cursor: "pointer", color: "var(--accent)", fontSize: 13, fontWeight: 500, fontFamily: "var(--font-sans)" }}>
                     Back to sign in
                   </button>
-                </div>
-              )}
-
-              {/* Sections preview — shown on magic tab only */}
-              {tab === "magic" && (
-                <div style={{ marginTop: 24, paddingTop: 18, borderTop: "1px dashed var(--line)" }}>
-                  <div className="br-eyebrow" style={{ fontSize: 10 }}>What we&apos;ll cover</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
-                    {([
-                      ["Snapshot", "Industry & scale"],
-                      ["Services", "What we're scoping"],
-                      ["Strategy", "ICP & competitors"],
-                      ["Goals",    "Targets & ranks"],
-                      ["Review",   "Confirm & submit"],
-                    ] as const).map(([t, d], i) => (
-                      <div key={t} style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                        <span className="br-mono" style={{ fontSize: 10, color: "var(--ink-5)", fontVariantNumeric: "tabular-nums" }}>0{i + 1}</span>
-                        <div>
-                          <div style={{ fontSize: 12, fontWeight: 500, color: "var(--ink-2)" }}>{t}</div>
-                          <div style={{ fontSize: 11, color: "var(--ink-4)" }}>{d}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 </div>
               )}
             </div>

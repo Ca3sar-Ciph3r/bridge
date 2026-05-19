@@ -158,7 +158,8 @@ export default function ReviewPage() {
     const sess = sessionRef.current;
     if (!sess) return;
     setSubmitting(true);
-    await submitOnboarding(sess.id);
+    const score = allData ? computeQualityScore(allData) : 0;
+    await submitOnboarding(sess.id, score);
     router.push("/complete");
   }
 

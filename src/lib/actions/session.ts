@@ -172,13 +172,38 @@ export async function getGoals(sessionId: string) {
 
 // ── Submit ───────────────────────────────────────────────────
 
-export async function submitOnboarding(sessionId: string) {
+export async function submitOnboarding(sessionId: string, qualityScore: number) {
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("onboarding_sessions")
-    .update({ status: "submitted", submitted_at: new Date().toISOString(), quality_score: 94 })
-    .eq("id", sessionId);
-  return { error };
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const [updateResult, sessionResult] = await Promise.all([
+    supabase
+      .from("onboarding_sessions")
+      .update({ status: "submitted", submitted_at: new Date().toISOString(), quality_score: qualityScore })
+      .eq("id", sessionId),
+    supabase
+      .from("onboarding_sessions")
+      .select("client_name, client_email, client_company")
+      .eq("id", sessionId)
+      .maybeSingle(),
+  ]);
+
+  if (user && !updateResult.error) {
+    const sess = sessionResult.data;
+    await supabase.from("portal_clients").upsert(
+      {
+        id: user.id,
+        name: sess?.client_name ?? user.user_metadata?.full_name ?? null,
+        company_name: sess?.client_company ?? null,
+        email: sess?.client_email ?? user.email ?? null,
+        retainer_status: "active",
+        start_date: new Date().toISOString().slice(0, 10),
+      },
+      { onConflict: "id", ignoreDuplicates: true }
+    );
+  }
+
+  return { error: updateResult.error };
 }
 
 // ── All section data (for Review / Resume) ───────────────────
