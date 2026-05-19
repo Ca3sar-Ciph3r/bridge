@@ -34,13 +34,23 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/onboarding") ||
     pathname.startsWith("/complete") ||
     pathname.startsWith("/portal") ||
-    pathname.startsWith("/resume");
+    pathname.startsWith("/resume") ||
+    pathname.startsWith("/agency");
   const isAuthRoute = pathname === "/" || pathname === "/magic-link" || pathname.startsWith("/auth");
 
   if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
+  }
+
+  // Agency routes: only the admin email may access them
+  if (pathname.startsWith("/agency") && user) {
+    if (user.email !== process.env.AGENCY_ADMIN_EMAIL) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
   }
 
   if (user && isAuthRoute && pathname !== "/") {

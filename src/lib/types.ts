@@ -18,6 +18,8 @@ export const NAV_SECTIONS: NavSection[] = [
 
 // ── Database row shapes ──────────────────────────────────────
 
+export type AgencyStatus = "reviewed" | "proposal_sent" | "won" | "lost";
+
 export interface OnboardingSession {
   id: string;
   user_id: string;
@@ -27,6 +29,7 @@ export interface OnboardingSession {
   status: "in_progress" | "submitted" | "abandoned";
   current_section: SectionId;
   quality_score: number | null;
+  agency_status: AgencyStatus | null;
   created_at: string;
   updated_at: string;
   submitted_at: string | null;

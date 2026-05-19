@@ -13,6 +13,9 @@ export default async function ResumePage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/");
 
+  // Agency admin goes straight to their dashboard
+  if (user.email === process.env.AGENCY_ADMIN_EMAIL) redirect("/agency/submissions");
+
   const session = await getOrCreateSession();
   if (!session) redirect("/");
 
