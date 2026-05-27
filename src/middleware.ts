@@ -8,6 +8,18 @@ export async function middleware(request: NextRequest) {
 
   let supabaseResponse = NextResponse.next({ request });
 
+  const { pathname } = request.nextUrl;
+  const isProtectedRoute =
+    pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/complete") ||
+    pathname.startsWith("/portal") ||
+    pathname.startsWith("/resume") ||
+    pathname.startsWith("/agency");
+
+  if (!isProtectedRoute) {
+    return NextResponse.next({ request });
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -27,37 +39,25 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  let user = null;
+  // Use getSession() instead of getUser() — reads JWT from cookie locally,
+  // no network round-trip to Supabase, so it never triggers a middleware timeout.
+  // (getUser() hits the Supabase auth server on every request and causes
+  //  504 MIDDLEWARE_INVOCATION_TIMEOUT on Vercel Edge.)
+  let session = null;
   try {
-    const { data, error } = await supabase.auth.getUser();
-    if (!error) {
-      user = data?.user ?? null;
-    }
+    const { data } = await supabase.auth.getSession();
+    session = data?.session ?? null;
   } catch (error) {
-    // If auth lookup fails or times out, fail safely by treating the request as unauthenticated.
     console.error("Middleware auth failed:", error);
   }
 
-  const { pathname } = request.nextUrl;
-  const isProtectedRoute =
-    pathname.startsWith("/onboarding") ||
-    pathname.startsWith("/complete") ||
-    pathname.startsWith("/portal") ||
-    pathname.startsWith("/resume") ||
-    pathname.startsWith("/agency");
-  const isAuthRoute = pathname === "/" || pathname === "/magic-link" || pathname === "/login" || pathname === "/signup" || pathname === "/forgot-password" || pathname.startsWith("/auth");
-
-  if (isProtectedRoute && !user) {
+  if (isProtectedRoute && !session) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
   }
   // Agency email check is enforced in src/app/agency/layout.tsx (server component)
   // — not here, because Edge middleware cannot reliably read non-NEXT_PUBLIC_ env vars.
-
-  if (user && isAuthRoute && pathname !== "/") {
-    // Allow landing page even when signed in (user might revisit)
-  }
 
   return supabaseResponse;
 }
