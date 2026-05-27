@@ -102,18 +102,37 @@ function ReportCard({ report }: { report: Report }) {
             borderTop: "1px solid var(--line)",
             display: "flex",
             alignItems: "center",
-            gap: 6,
+            justifyContent: "space-between",
+            gap: 12,
           }}
         >
-          <Icon name="file" size={13} color="var(--ink-4)" />
-          <span style={{ fontSize: 12, color: "var(--ink-4)" }}>
-            Added{" "}
-            {new Date(report.created_at).toLocaleDateString("en-ZA", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })}
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <Icon name="file" size={13} color="var(--ink-4)" />
+            <span style={{ fontSize: 12, color: "var(--ink-4)" }}>
+              Added{" "}
+              {new Date(report.created_at).toLocaleDateString("en-ZA", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
+            </span>
+          </div>
+          {report.pdf_url && (
+            <a
+              href={report.pdf_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                padding: "6px 14px", background: "var(--ink)", color: "#fff",
+                borderRadius: 8, textDecoration: "none", fontSize: 12.5, fontWeight: 600,
+                flexShrink: 0,
+              }}
+            >
+              <Icon name="file" size={13} color="#fff" />
+              Download PDF
+            </a>
+          )}
         </div>
       </div>
     </Card>

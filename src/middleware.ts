@@ -27,7 +27,16 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    if (!error) {
+      user = data?.user ?? null;
+    }
+  } catch (error) {
+    // If auth lookup fails or times out, fail safely by treating the request as unauthenticated.
+    console.error("Middleware auth failed:", error);
+  }
 
   const { pathname } = request.nextUrl;
   const isProtectedRoute =

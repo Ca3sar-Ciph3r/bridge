@@ -4,12 +4,16 @@ import { ClientEditor } from "./ClientEditor";
 import { PortalUrlBox } from "./PortalUrlBox";
 import { DeliverableManager } from "./DeliverableManager";
 import { InvoiceManager } from "./InvoiceManager";
-import type { PortalClient, Deliverable, Invoice } from "@/lib/types";
+import { ReportManager } from "./ReportManager";
+import { BrandManager } from "./BrandManager";
+import type { PortalClient, Deliverable, Invoice, Report, BrandAsset } from "@/lib/types";
 
 const TABS = [
   { id: "overview",      label: "Overview" },
   { id: "deliverables",  label: "Deliverables" },
   { id: "invoices",      label: "Invoices" },
+  { id: "reports",       label: "Reports" },
+  { id: "brand",         label: "Brand Assets" },
 ] as const;
 
 type TabId = typeof TABS[number]["id"];
@@ -18,15 +22,17 @@ interface Props {
   client: PortalClient;
   deliverables: Deliverable[];
   invoices: Invoice[];
+  reports: Report[];
+  brandAssets: BrandAsset[];
 }
 
-export function ClientDetailTabs({ client, deliverables, invoices }: Props) {
+export function ClientDetailTabs({ client, deliverables, invoices, reports, brandAssets }: Props) {
   const [active, setActive] = useState<TabId>("overview");
 
   return (
     <div>
       {/* Tab bar */}
-      <div style={{ display: "flex", gap: 2, borderBottom: "1px solid var(--line)", marginBottom: 24 }}>
+      <div style={{ display: "flex", gap: 2, borderBottom: "1px solid var(--line)", marginBottom: 24, flexWrap: "wrap" }}>
         {TABS.map(tab => (
           <button
             key={tab.id}
@@ -44,7 +50,6 @@ export function ClientDetailTabs({ client, deliverables, invoices }: Props) {
         ))}
       </div>
 
-      {/* Overview */}
       {active === "overview" && (
         <div>
           <ClientEditor client={client} />
@@ -54,14 +59,20 @@ export function ClientDetailTabs({ client, deliverables, invoices }: Props) {
         </div>
       )}
 
-      {/* Deliverables */}
       {active === "deliverables" && (
         <DeliverableManager clientId={client.id} initial={deliverables} />
       )}
 
-      {/* Invoices */}
       {active === "invoices" && (
         <InvoiceManager clientId={client.id} initial={invoices} />
+      )}
+
+      {active === "reports" && (
+        <ReportManager clientId={client.id} initial={reports} />
+      )}
+
+      {active === "brand" && (
+        <BrandManager clientId={client.id} initial={brandAssets} />
       )}
     </div>
   );

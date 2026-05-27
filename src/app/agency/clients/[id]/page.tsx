@@ -1,12 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getAgencyClient, getClientDeliverables, getClientInvoices } from "@/lib/actions/agency";
+import { getAgencyClient, getClientDeliverables, getClientInvoices, getClientReports, getClientBrandAssets } from "@/lib/actions/agency";
 import { Icon } from "@/components/ui/Icon";
 import { Pill } from "@/components/ui/Chip";
-import { ClientEditor } from "./ClientEditor";
-import { PortalUrlBox } from "./PortalUrlBox";
-import { DeliverableManager } from "./DeliverableManager";
-import { InvoiceManager } from "./InvoiceManager";
 import { ClientDetailTabs } from "./ClientDetailTabs";
 
 function formatDate(d: string | null) {
@@ -25,10 +21,12 @@ function StatTile({ label, value }: { label: string; value: string | number }) {
 
 export default async function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [{ client, projects, invoices: rawInvoices, deliverables: rawDeliverables, reports }, deliverables, invoices] = await Promise.all([
+  const [{ client, projects }, deliverables, invoices, reports, brandAssets] = await Promise.all([
     getAgencyClient(id),
     getClientDeliverables(id),
     getClientInvoices(id),
+    getClientReports(id),
+    getClientBrandAssets(id),
   ]);
   if (!client) notFound();
 
@@ -71,6 +69,8 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
         client={client}
         deliverables={deliverables}
         invoices={invoices}
+        reports={reports}
+        brandAssets={brandAssets}
       />
     </div>
   );

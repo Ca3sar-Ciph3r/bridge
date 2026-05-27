@@ -44,9 +44,16 @@ export async function updateDeliverableStatus(id: string, status: Deliverable["s
 export async function getReports(): Promise<Report[]> {
   const clientId = await getClientId();
   if (!clientId) return [];
-  const supabase = await createClient();
-  const { data } = await supabase.from("reports").select("*").eq("client_id", clientId).order("month", { ascending: false });
-  return (data ?? []) as Report[];
+  const admin = createAdminClient();
+  const { data } = await admin.from("reports").select("*").eq("client_id", clientId).order("month", { ascending: false });
+  const rows = (data ?? []) as Report[];
+  return Promise.all(rows.map(async (r) => {
+    if (r.pdf_url && !r.pdf_url.startsWith("http")) {
+      const { data: signed } = await admin.storage.from("client-files").createSignedUrl(r.pdf_url, 3600);
+      return { ...r, pdf_url: signed?.signedUrl ?? null };
+    }
+    return r;
+  }));
 }
 
 export async function getInvoices(): Promise<Invoice[]> {
@@ -75,9 +82,21 @@ export async function getProjects(): Promise<Project[]> {
 export async function getBrandAssets(): Promise<BrandAsset[]> {
   const clientId = await getClientId();
   if (!clientId) return [];
-  const supabase = await createClient();
-  const { data } = await supabase.from("brand_assets").select("*").eq("client_id", clientId).order("type", { ascending: true });
-  return (data ?? []) as BrandAsset[];
+  const admin = createAdminClient();
+  const { data } = await admin.from("brand_assets").select("*").eq("client_id", clientId).order("type", { ascending: true });
+  const rows = (data ?? []) as BrandAsset[];
+  return Promise.all(rows.map(async (a) => {
+    const signed: Partial<BrandAsset> = {};
+    if (a.file_url && !a.file_url.startsWith("http")) {
+      const { data: s } = await admin.storage.from("client-files").createSignedUrl(a.file_url, 3600);
+      signed.file_url = s?.signedUrl ?? null;
+    }
+    if (a.thumbnail_url && !a.thumbnail_url.startsWith("http")) {
+      const { data: s } = await admin.storage.from("client-files").createSignedUrl(a.thumbnail_url, 3600);
+      signed.thumbnail_url = s?.signedUrl ?? null;
+    }
+    return { ...a, ...signed };
+  }));
 }
 
 export async function getAccountCredentials(): Promise<AccountCredential[]> {

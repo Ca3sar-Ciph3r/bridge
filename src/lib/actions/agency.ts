@@ -1,7 +1,7 @@
 "use server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
-import type { AgencyStatus, PortalClient, Deliverable, Invoice } from "@/lib/types";
+import type { AgencyStatus, PortalClient, Deliverable, Invoice, Report, BrandAsset } from "@/lib/types";
 
 const BUCKET = "client-files";
 
@@ -230,4 +230,110 @@ export async function deleteInvoice(id: string, clientId: string, filePath: stri
   await admin.from("invoices").delete().eq("id", id);
   revalidatePath(`/agency/clients/${clientId}`);
   revalidatePath("/portal/invoices");
+}
+
+// ── Reports (agency) ──────────────────────────────────────────
+
+export async function getClientReports(clientId: string): Promise<Report[]> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("reports")
+    .select("*")
+    .eq("client_id", clientId)
+    .order("month", { ascending: false });
+  const rows = (data ?? []) as Report[];
+  return Promise.all(rows.map(async (r) => {
+    if (r.pdf_url && !r.pdf_url.startsWith("http")) {
+      const { data: s } = await admin.storage.from(BUCKET).createSignedUrl(r.pdf_url, 3600);
+      return { ...r, pdf_url: s?.signedUrl ?? null };
+    }
+    return r;
+  }));
+}
+
+export async function addReport(
+  clientId: string,
+  payload: { title: string | null; month: string; file_path: string | null }
+): Promise<{ error?: string }> {
+  const admin = createAdminClient();
+  const { error } = await admin.from("reports").insert({
+    client_id: clientId,
+    title: payload.title,
+    month: payload.month,
+    pdf_url: payload.file_path,
+    summary: null,
+    metrics: {},
+  });
+  if (error) return { error: error.message };
+  revalidatePath(`/agency/clients/${clientId}`);
+  revalidatePath("/portal/reports");
+  return {};
+}
+
+export async function deleteReport(id: string, clientId: string, filePath: string | null): Promise<void> {
+  const admin = createAdminClient();
+  if (filePath && !filePath.startsWith("http")) {
+    await admin.storage.from(BUCKET).remove([filePath]);
+  }
+  await admin.from("reports").delete().eq("id", id);
+  revalidatePath(`/agency/clients/${clientId}`);
+  revalidatePath("/portal/reports");
+}
+
+// ── Brand Assets (agency) ─────────────────────────────────────
+
+export async function getClientBrandAssets(clientId: string): Promise<BrandAsset[]> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("brand_assets")
+    .select("*")
+    .eq("client_id", clientId)
+    .order("type", { ascending: true });
+  const rows = (data ?? []) as BrandAsset[];
+  return Promise.all(rows.map(async (a) => {
+    const signed: Partial<BrandAsset> = {};
+    if (a.file_url && !a.file_url.startsWith("http")) {
+      const { data: s } = await admin.storage.from(BUCKET).createSignedUrl(a.file_url, 3600);
+      signed.file_url = s?.signedUrl ?? null;
+    }
+    if (a.thumbnail_url && !a.thumbnail_url.startsWith("http")) {
+      const { data: s } = await admin.storage.from(BUCKET).createSignedUrl(a.thumbnail_url, 3600);
+      signed.thumbnail_url = s?.signedUrl ?? null;
+    }
+    return { ...a, ...signed };
+  }));
+}
+
+export async function addBrandAsset(
+  clientId: string,
+  payload: {
+    name: string;
+    type: BrandAsset["type"];
+    file_path: string | null;
+    metadata: Record<string, unknown>;
+  }
+): Promise<{ error?: string }> {
+  const admin = createAdminClient();
+  const { error } = await admin.from("brand_assets").insert({
+    client_id: clientId,
+    name: payload.name,
+    type: payload.type,
+    file_url: payload.file_path,
+    thumbnail_url: null,
+    metadata: payload.metadata,
+  });
+  if (error) return { error: error.message };
+  revalidatePath(`/agency/clients/${clientId}`);
+  revalidatePath("/portal/brand");
+  return {};
+}
+
+export async function deleteBrandAsset(id: string, clientId: string, filePath: string | null): Promise<void> {
+  const admin = createAdminClient();
+  if (filePath && !filePath.startsWith("http")) {
+    await admin.storage.from(BUCKET).remove([filePath]);
+  }
+  await admin.from("brand_assets").delete().eq("id", id);
+  revalidatePath(`/agency/clients/${clientId}`);
+  revalidatePath("/portal/brand");
 }

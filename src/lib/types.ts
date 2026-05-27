@@ -174,6 +174,7 @@ export interface Report {
   title: string | null;
   summary: string | null;
   metrics: Record<string, unknown>;
+  pdf_url: string | null;
   created_at: string;
 }
 
